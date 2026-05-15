@@ -51,15 +51,15 @@ export default function Transformations() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Client Transformations | Before & After | CoachSet Pakistan"
+          title="Client Transformations | Before & After | Liftrz Pakistan"
           description="Real results from verified personal trainers in Pakistan. See transformations, read testimonials, and find your coach."
-          canonical="https://coachset-pakistan.vercel.app/transformations"
+          canonical="https://liftrz.vercel.app/transformations"
         />
 
         <HeroBlock
           kicker="Real results"
           title="Client transformations"
-          description="Verified before-and-after results from trainers on CoachSet. Every transformation is tied to a real booking with client consent."
+          description="Verified before-and-after results from trainers on Liftrz. Every transformation is tied to a real booking with client consent."
           actions={
             <Link to="/discover" className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark">
               Find your trainer <ArrowRight className="h-4 w-4" />

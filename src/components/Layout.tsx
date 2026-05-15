@@ -52,7 +52,7 @@ export default function Layout({ children }: LayoutProps) {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-700/30 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 md:px-6">
           <Link to="/" className="font-serif text-2xl font-black italic tracking-tight text-white">
-            CoachSet
+            Liftrz
           </Link>
           <div className="hidden items-center gap-6 text-xs font-medium text-slate-400 md:flex">
             {desktopLinks.map((link) => (
@@ -125,7 +125,7 @@ export default function Layout({ children }: LayoutProps) {
       <footer className="border-t border-slate-700/30 bg-surface px-5 py-12 pb-28">
         <div className="mx-auto max-w-7xl grid gap-10 md:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <Link to="/" className="text-2xl font-black italic font-serif tracking-tighter text-white">CoachSet</Link>
+            <Link to="/" className="text-2xl font-black italic font-serif tracking-tighter text-white">Liftrz</Link>
             <p className="mt-3 max-w-md text-sm leading-7 text-slate-400">Verified personal trainers in Pakistan. Find strength coaches, yoga instructors, and rehab specialists near you. Book your free trial today.</p>
           </div>
           <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
@@ -214,7 +214,7 @@ function FooterLink({ to, label }: { to: string; label: string }) {
 function FloatingWhatsApp() {
   return (
     <a
-      href="https://wa.me/923000000001?text=Hi%20CoachSet%2C%20I%20am%20looking%20for%20a%20personal%20trainer%20in%20Pakistan.%20Can%20you%20help%20me%20find%20the%20right%20one%3F"
+      href="https://wa.me/923000000001?text=Hi%20Liftrz%2C%20I%20am%20looking%20for%20a%20personal%20trainer%20in%20Pakistan.%20Can%20you%20help%20me%20find%20the%20right%20one%3F"
       target="_blank"
       rel="noreferrer"
       className="fixed bottom-24 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-success shadow-lg shadow-success/30 transition-transform hover:scale-110 md:bottom-8 md:right-8"

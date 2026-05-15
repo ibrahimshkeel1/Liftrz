@@ -152,7 +152,7 @@ export default function AdminDashboard() {
       reader.onloadend = async () => {
         const base64 = reader.result as string;
         const upload = await api.uploadFile({
-          bucket: 'coachset-private',
+          bucket: 'Liftrz-private',
           folder: 'payouts',
           fileName: `payout-${payoutId}-${Date.now()}.${file.name.split('.').pop()}`,
           dataUrl: base64
@@ -196,14 +196,14 @@ export default function AdminDashboard() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="CoachSet Owner Backend | Payments, Trainers and Commission"
-          description="Owner backend for CoachSet Pakistan marketplace payments, trainer approvals, commission, payouts, disputes and reviews."
-          canonical="https://coachset-pakistan.vercel.app/admin"
+          title="Liftrz Owner Backend | Payments, Trainers and Commission"
+          description="Owner backend for Liftrz Pakistan marketplace payments, trainer approvals, commission, payouts, disputes and reviews."
+          canonical="https://liftrz.vercel.app/admin"
         />
 
         <HeroBlock
           kicker="Owner backend"
-          title="CoachSet Control Room"
+          title="Liftrz Control Room"
           description="Commission-sensitive operations, trainer approvals, payment verification and disputes all live inside one controlled workspace."
           aside={
             <Surface className="p-6">

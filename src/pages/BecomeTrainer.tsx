@@ -8,15 +8,15 @@ export default function BecomeTrainer() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Become a Personal Trainer on CoachSet Pakistan"
-          description="Register as a verified personal trainer in Pakistan. Submit CNIC, certifications, packages, pricing and payout details for CoachSet approval."
-          canonical="https://coachset-pakistan.vercel.app/become-trainer"
+          title="Become a Personal Trainer on Liftrz Pakistan"
+          description="Register as a verified personal trainer in Pakistan. Submit CNIC, certifications, packages, pricing and payout details for Liftrz approval."
+          canonical="https://liftrz.vercel.app/become-trainer"
         />
 
         <HeroBlock
           kicker="Trainer onboarding"
           title="Sell coaching packages with verified trust."
-          description="CoachSet gives Pakistan-based trainers a profile, paid booking flow, review system, client pipeline, commission ledger and payout tracking."
+          description="Liftrz gives Pakistan-based trainers a profile, paid booking flow, review system, client pipeline, commission ledger and payout tracking."
           actions={<Link to="/register/trainer" className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark">Start trainer application <ArrowRight className="h-4 w-4" /></Link>}
           aside={
             <Surface className="grid gap-4 p-6">

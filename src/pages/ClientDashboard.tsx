@@ -43,15 +43,15 @@ export default function ClientDashboard() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Client Dashboard | CoachSet Pakistan"
-          description="Client dashboard for CoachSet Pakistan bookings, payment status, trainer contact unlocks, active protocols and verified reviews."
-          canonical="https://coachset-pakistan.vercel.app/client/dashboard"
+          title="Client Dashboard | Liftrz Pakistan"
+          description="Client dashboard for Liftrz Pakistan bookings, payment status, trainer contact unlocks, active protocols and verified reviews."
+          canonical="https://liftrz.vercel.app/client/dashboard"
         />
 
         <HeroBlock
           kicker="Client portal"
           title="My bookings"
-          description="Payments, contact unlocks and active protocols stay inside CoachSet."
+          description="Payments, contact unlocks and active protocols stay inside Liftrz."
           actions={<Link to="/discover" className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark"><Search className="h-4 w-4" /> Find trainer</Link>}
           aside={
             <Surface className="p-6">
@@ -81,7 +81,7 @@ export default function ClientDashboard() {
                     <h2 className="editorial-header text-4xl font-bold text-white">{booking.packageTitle}</h2>
                     <p className="mt-2 text-slate-400">Coach: {booking.trainerName} / Paid: {money(booking.grossAmount)}</p>
                     <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                      <MetricCard label="CoachSet fee" value={money(booking.commissionAmount)} />
+                      <MetricCard label="Liftrz fee" value={money(booking.commissionAmount)} />
                       <MetricCard label="Trainer payout" value={money(booking.trainerPayoutAmount)} />
                       <MetricCard label="Contact" value={booking.contactUnlocked ? 'Unlocked' : 'Locked'} />
                     </div>
@@ -90,7 +90,7 @@ export default function ClientDashboard() {
                     {booking.contactUnlocked ? (
                       <>
                         <h3 className="flex items-center gap-2 font-semibold text-white"><MessageCircle className="h-5 w-5 text-primary" /> Trainer contact unlocked</h3>
-                        <p className="mt-3 text-sm leading-7 text-slate-400">Payment has been verified by admin. Use CoachSet chat so your conversation stays protected and monitored.</p>
+                        <p className="mt-3 text-sm leading-7 text-slate-400">Payment has been verified by admin. Use Liftrz chat so your conversation stays protected and monitored.</p>
                         <div className="mt-5 flex flex-wrap gap-3">
                           <button type="button" onClick={() => setSelectedChatId(selectedChatId === booking.id ? '' : booking.id)} className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-black">
                             {selectedChatId === booking.id ? 'Close chat' : 'Open chat'}

@@ -17,7 +17,7 @@ export default function PasswordReset() {
   const toast = useToast();
 
   useEffect(() => {
-    document.title = token ? 'Set New Password | CoachSet' : 'Reset Password | CoachSet';
+    document.title = token ? 'Set New Password | Liftrz' : 'Reset Password | Liftrz';
   }, [token]);
 
   const submitRequest = async (event: FormEvent) => {
@@ -64,9 +64,9 @@ export default function PasswordReset() {
     <PageShell>
       <PageContainer>
         <SEO
-          title={token ? 'Set New Password | CoachSet Pakistan' : 'Reset Password | CoachSet Pakistan'}
-          description="Reset your CoachSet account password."
-          canonical="https://coachset-pakistan.vercel.app/reset-password"
+          title={token ? 'Set New Password | Liftrz Pakistan' : 'Reset Password | Liftrz Pakistan'}
+          description="Reset your Liftrz account password."
+          canonical="https://liftrz.vercel.app/reset-password"
         />
 
         <HeroBlock

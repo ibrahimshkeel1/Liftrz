@@ -8,9 +8,9 @@ export default function Tools() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Fitness Calculators | BMI, TDEE, Body Fat | CoachSet Pakistan"
+          title="Fitness Calculators | BMI, TDEE, Body Fat | Liftrz Pakistan"
           description="Free fitness calculators for Pakistan. Calculate your BMI, daily calorie needs (TDEE), and body fat percentage."
-          canonical="https://coachset-pakistan.vercel.app/tools"
+          canonical="https://liftrz.vercel.app/tools"
         />
 
         <HeroBlock
@@ -123,7 +123,7 @@ function BMICalculator() {
             {result.label === 'Overweight' && (
               <>
                 <p className="mb-1 font-semibold text-primary">Above healthy range (25 - 29.9)</p>
-                <p>Small changes matter. Reduce oil in salan, cut sugary chai, and aim for a 300-500 calorie deficit. Walk 30 minutes daily. A CoachSet trainer can structure this safely.</p>
+                <p>Small changes matter. Reduce oil in salan, cut sugary chai, and aim for a 300-500 calorie deficit. Walk 30 minutes daily. A Liftrz trainer can structure this safely.</p>
               </>
             )}
             {result.label === 'Obese' && (
@@ -369,7 +369,7 @@ function BodyFatCalculator() {
                 {result <= 13 && <p>Excellent. Focus on maintaining strength and diet discipline. Recomp or lean bulk if you want more size.</p>}
                 {result > 13 && result <= 17 && <p>Solid. To get leaner, add 2-3 cardio sessions per week and tighten portion control. To gain size, eat at a 10% surplus and lift heavy.</p>}
                 {result > 17 && result <= 24 && <p>Decent base. Start tracking food. Aim for a 300-500 calorie deficit and resistance training 3-4x per week. Consistency beats intensity.</p>}
-                {result > 24 && <p>Priority: sustainable fat loss. Start with daily walking, reduce fried/oily foods, and get a structured plan from a CoachSet trainer. Small daily wins compound.</p>}
+                {result > 24 && <p>Priority: sustainable fat loss. Start with daily walking, reduce fried/oily foods, and get a structured plan from a Liftrz trainer. Small daily wins compound.</p>}
               </>
             ) : (
               <>
@@ -383,7 +383,7 @@ function BodyFatCalculator() {
                 {result <= 20 && <p>Excellent. Maintain with balanced nutrition and strength training. Do not undereat — female hormones need adequate body fat.</p>}
                 {result > 20 && result <= 24 && <p>Solid. To get leaner, add light cardio and track intake. To build curves, focus on glute/leg focused strength work with a slight surplus.</p>}
                 {result > 24 && result <= 31 && <p>Good starting point. Aim for a modest 300-calorie deficit, prioritize protein, and train 3-4x per week. Results show in 8-12 weeks.</p>}
-                {result > 31 && <p>Focus on building habits first: daily walks, home-cooked meals, and consistent sleep. A female trainer on CoachSet can design a plan around your lifestyle and comfort.</p>}
+                {result > 31 && <p>Focus on building habits first: daily walks, home-cooked meals, and consistent sleep. A female trainer on Liftrz can design a plan around your lifestyle and comfort.</p>}
               </>
             )}
           </div>

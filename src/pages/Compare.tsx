@@ -41,7 +41,7 @@ export default function Compare() {
   return (
     <PageShell>
       <PageContainer>
-        <SEO title="Compare Trainers | CoachSet Pakistan" description="Compare up to 3 verified personal trainers side by side." />
+        <SEO title="Compare Trainers | Liftrz Pakistan" description="Compare up to 3 verified personal trainers side by side." />
 
         <HeroBlock
           kicker="Compare"

@@ -87,15 +87,15 @@ export default function LeadDetail() {
       <PageShell>
         <PageContainer>
           <SEO
-            title="Trainer Inbox | CoachSet Pakistan"
-            description="Review new client leads, booking status, payment verification state and onboarding notes from the CoachSet trainer inbox."
-            canonical="https://coachset-pakistan.vercel.app/inbox"
+            title="Trainer Inbox | Liftrz Pakistan"
+            description="Review new client leads, booking status, payment verification state and onboarding notes from the Liftrz trainer inbox."
+            canonical="https://liftrz.vercel.app/inbox"
           />
 
           <HeroBlock
             kicker="Trainer inbox"
             title="Review clients before they book."
-            description="Every inquiry stays inside CoachSet until payment is verified. Accept, reject or move a lead into the booked pipeline without losing the audit trail."
+            description="Every inquiry stays inside Liftrz until payment is verified. Accept, reject or move a lead into the booked pipeline without losing the audit trail."
             aside={
               <Surface className="p-6">
                 <p className="text-xs font-semibold text-primary">Inbox posture</p>
@@ -181,9 +181,9 @@ export default function LeadDetail() {
     <PageShell>
       <PageContainer>
         <SEO
-          title={`${selectedLead.clientName} Lead | CoachSet Pakistan`}
-          description="Review client contact details, payment verification, history, notes and nutrition targets from the CoachSet trainer inbox."
-          canonical="https://coachset-pakistan.vercel.app/inbox"
+          title={`${selectedLead.clientName} Lead | Liftrz Pakistan`}
+          description="Review client contact details, payment verification, history, notes and nutrition targets from the Liftrz trainer inbox."
+          canonical="https://liftrz.vercel.app/inbox"
         />
 
         <HeroBlock

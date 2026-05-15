@@ -17,7 +17,7 @@ function setMeta(selector: string, key: 'name' | 'property', value: string, cont
   tag.content = content;
 }
 
-export default function SEO({ title, description, canonical = 'https://coachset-pakistan.vercel.app/', jsonLd }: SEOProps) {
+export default function SEO({ title, description, canonical = 'https://liftrz.vercel.app/', jsonLd }: SEOProps) {
   useEffect(() => {
     document.title = title;
     setMeta('meta[name="description"]', 'name', 'description', description);

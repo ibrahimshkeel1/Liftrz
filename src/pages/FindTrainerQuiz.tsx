@@ -86,7 +86,7 @@ export default function FindTrainerQuiz() {
       <PageShell>
         <PageContainer>
           <SEO
-            title="Your Matched Trainers | CoachSet Pakistan"
+            title="Your Matched Trainers | Liftrz Pakistan"
             description="Based on your quiz answers, we found the best trainers for your goals."
           />
           <div className="mx-auto max-w-2xl text-center">
@@ -132,7 +132,7 @@ export default function FindTrainerQuiz() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Find My Trainer | CoachSet Pakistan"
+          title="Find My Trainer | Liftrz Pakistan"
           description="Answer 4 quick questions and we'll match you with the perfect trainer for your goals."
         />
 

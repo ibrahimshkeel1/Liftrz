@@ -7,7 +7,7 @@ const benefits = [
   {
     icon: BarChart3,
     title: 'Keep 85% of what you earn',
-    description: 'CoachSet takes only 15% commission per verified booking. No monthly fees, no listing charges, no upfront costs.'
+    description: 'Liftrz takes only 15% commission per verified booking. No monthly fees, no listing charges, no upfront costs.'
   },
   {
     icon: Star,
@@ -22,7 +22,7 @@ const benefits = [
   {
     icon: MessageCircle,
     title: 'Built-in chat system',
-    description: 'Communicate with clients securely through CoachSet. Admin monitors conversations for safety, but your privacy is protected.'
+    description: 'Communicate with clients securely through Liftrz. Admin monitors conversations for safety, but your privacy is protected.'
   },
   {
     icon: Wallet,
@@ -40,7 +40,7 @@ const steps = [
   'Submit your CNIC and certifications',
   'Write a detailed bio and add your specialties',
   'Set your pricing and available training modes',
-  'Get approved by CoachSet within 24-48 hours',
+  'Get approved by Liftrz within 24-48 hours',
   'Start receiving inquiries from verified clients'
 ];
 
@@ -49,9 +49,9 @@ export default function ForTrainers() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="For Trainers | Join CoachSet Pakistan"
-          description="Grow your personal training business with CoachSet. 15% commission, verified reviews, payment protection, and built-in client management."
-          canonical="https://coachset-pakistan.vercel.app/for-trainers"
+          title="For Trainers | Join Liftrz Pakistan"
+          description="Grow your personal training business with Liftrz. 15% commission, verified reviews, payment protection, and built-in client management."
+          canonical="https://liftrz.vercel.app/for-trainers"
         />
 
         <HeroBlock
@@ -106,7 +106,7 @@ export default function ForTrainers() {
             <div className="mt-4 space-y-2 text-sm text-slate-400">
               <p>You charge PKR 20,000 for a monthly package.</p>
               <p>Client pays PKR 20,000.</p>
-              <p>CoachSet fee: PKR 3,000.</p>
+              <p>Liftrz fee: PKR 3,000.</p>
               <p className="font-semibold text-white">You receive: PKR 17,000.</p>
             </div>
           </Surface>
@@ -116,7 +116,7 @@ export default function ForTrainers() {
           <h2 className="text-2xl font-bold text-white">Ready to grow?</h2>
           <p className="mt-2 text-slate-400">Apply in under 10 minutes. Approval typically takes 24-48 hours.</p>
           <Link to="/register/trainer" className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-sm font-bold text-white hover:bg-primary-dark">
-            Apply to join CoachSet <ArrowRight className="h-4 w-4" />
+            Apply to join Liftrz <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </PageContainer>

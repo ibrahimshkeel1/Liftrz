@@ -55,7 +55,7 @@ const posts: Record<string, { title: string; date: string; category: string; con
       <p>Female trainers often specialize in: post-pregnancy fitness, wedding prep, weight loss, and strength training for women. Many also offer home-based training for added privacy.</p>
 
       <h2>How to Find One</h2>
-      <p>Use CoachSet's gender filter to find verified female trainers in your area. All female trainers on our platform are identity-verified and certified.</p>
+      <p>Use Liftrz's gender filter to find verified female trainers in your area. All female trainers on our platform are identity-verified and certified.</p>
     `
   },
   'home-vs-gym-training': {
@@ -105,8 +105,8 @@ const posts: Record<string, { title: string; date: string; category: string; con
       <h2>Who It Does Not Work For</h2>
       <p>Complete beginners who need form correction, people who struggle with consistency, and those who need the social pressure of an in-person session.</p>
       
-      <h2>How It Works on CoachSet</h2>
-      <p>Your trainer sends weekly workout videos, checks your form via WhatsApp, adjusts your nutrition plan, and tracks progress through the CoachSet app. Weekly video calls keep you accountable.</p>
+      <h2>How It Works on Liftrz</h2>
+      <p>Your trainer sends weekly workout videos, checks your form via WhatsApp, adjusts your nutrition plan, and tracks progress through the Liftrz app. Weekly video calls keep you accountable.</p>
       
       <h2>Cost Savings</h2>
       <p>Online coaching typically costs 40-60% less than in-person training. Based on market rates, a quality online trainer may charge around PKR 8,000-15,000 per month compared to PKR 20,000-40,000 for in-person training. Exact rates depend on the trainer and what's included in the package.</p>
@@ -189,9 +189,9 @@ export default function BlogPost() {
     <PageShell>
       <PageContainer>
         <SEO
-          title={`${post.title} | CoachSet Pakistan Blog`}
+          title={`${post.title} | Liftrz Pakistan Blog`}
           description={post.title}
-          canonical={`https://coachset-pakistan.vercel.app/blog/${slug}`}
+          canonical={`https://liftrz.vercel.app/blog/${slug}`}
         />
 
         <Link to="/blog" className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-primary">

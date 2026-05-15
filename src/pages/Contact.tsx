@@ -24,14 +24,14 @@ export default function Contact() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Contact Us | CoachSet Pakistan"
-          description="Get in touch with CoachSet Pakistan for support, partnerships, or general inquiries."
-          canonical="https://coachset-pakistan.vercel.app/contact"
+          title="Contact Us | Liftrz Pakistan"
+          description="Get in touch with Liftrz Pakistan for support, partnerships, or general inquiries."
+          canonical="https://liftrz.vercel.app/contact"
         />
 
         <HeroBlock
           kicker="Get in touch"
-          title="Contact CoachSet"
+          title="Contact Liftrz"
           description="Have a question, partnership idea, or need support? We typically reply within 24 hours."
         />
 
@@ -79,7 +79,7 @@ export default function Contact() {
                 <Mail className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm font-semibold text-white">Email</p>
-                  <p className="text-sm text-slate-400">hello@coachset.pk</p>
+                  <p className="text-sm text-slate-400">hey@liftrz.com</p>
                 </div>
               </div>
             </Surface>

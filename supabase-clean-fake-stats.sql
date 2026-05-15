@@ -1,5 +1,5 @@
 -- ============================================
--- CoachSet: Clean fake hardcoded stats from trainers
+-- Liftrz: Clean fake hardcoded stats from trainers
 -- Run this in Supabase SQL Editor
 -- ============================================
 
@@ -16,12 +16,12 @@ SELECT
   t->>'clientRetention' AS fake_retention,
   t->>'totalRevenue' AS fake_revenue,
   t->>'activeProtocols' AS fake_protocols
-FROM coachset_state,
+FROM Liftrz_state,
      jsonb_array_elements(payload->'trainers') AS t
 WHERE id = 1;
 
 -- Step 2: Remove all fake vanity fields from every trainer
-UPDATE coachset_state
+UPDATE Liftrz_state
 SET payload = jsonb_set(
   payload,
   '{trainers}',
@@ -51,12 +51,12 @@ SELECT
   t->>'reviews' AS reviews_after,
   t->>'completedBookings' AS completed_after,
   t->>'successRate' AS success_after
-FROM coachset_state,
+FROM Liftrz_state,
      jsonb_array_elements(payload->'trainers') AS t
 WHERE id = 1;
 
 -- Step 4: Add real yearsExperience field to trainers that don't have it
-UPDATE coachset_state
+UPDATE Liftrz_state
 SET payload = jsonb_set(
   payload,
   '{trainers}',

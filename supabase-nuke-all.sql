@@ -1,11 +1,11 @@
 -- ============================================
--- CoachSet: NUKE ALL DEMO DATA
+-- Liftrz: NUKE ALL DEMO DATA
 -- This wipes EVERYTHING except the admin login
 -- Run this in Supabase SQL Editor
 -- ============================================
 
 -- Step 1: Reset everything to empty with only the admin user
-UPDATE coachset_state
+UPDATE Liftrz_state
 SET payload = jsonb_build_object(
   'platformSettings', jsonb_build_object(
     'commissionRate', 0.15,
@@ -44,5 +44,5 @@ SELECT
   jsonb_array_length(payload->'bookings') AS booking_count,
   jsonb_array_length(payload->'reviews') AS review_count,
   jsonb_array_length(payload->'leads') AS lead_count
-FROM coachset_state
+FROM Liftrz_state
 WHERE id = 1;

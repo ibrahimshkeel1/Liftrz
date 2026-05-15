@@ -24,13 +24,13 @@ export default function Privacy() {
           <p className="text-slate-400">We use industry-standard encryption, secure authentication, and regular security audits. Passwords are hashed with scrypt. Sessions use signed JWT tokens.</p>
 
           <h3 className="mt-6 text-xl font-semibold text-white">5. Your Rights</h3>
-          <p className="text-slate-400">You may request deletion of your account and associated data. Email owner@coachset.pk with subject "Data Deletion Request."</p>
+          <p className="text-slate-400">You may request deletion of your account and associated data. Email hey@liftrz.com with subject "Data Deletion Request."</p>
 
           <h3 className="mt-6 text-xl font-semibold text-white">6. Cookies</h3>
           <p className="text-slate-400">We use essential cookies for authentication and session management. We do not use tracking cookies for advertising.</p>
 
           <h3 className="mt-6 text-xl font-semibold text-white">7. Contact</h3>
-          <p className="text-slate-400">For privacy concerns, contact owner@coachset.pk</p>
+          <p className="text-slate-400">For privacy concerns, contact hey@liftrz.com</p>
         </div>
       </PageContainer>
     </PageShell>

@@ -7,7 +7,7 @@ const steps = [
   {
     number: '01',
     title: 'Browse verified trainers',
-    description: 'Filter by city, goal, budget, and gender. Every trainer on CoachSet is identity-verified with CNIC and certifications reviewed before approval.',
+    description: 'Filter by city, goal, budget, and gender. Every trainer on Liftrz is identity-verified with CNIC and certifications reviewed before approval.',
     icon: Search
   },
   {
@@ -31,13 +31,13 @@ const steps = [
   {
     number: '05',
     title: 'Unlock direct contact',
-    description: 'After payment verification, the trainer\'s WhatsApp and phone unlock automatically. Chat through CoachSet or switch to direct contact.',
+    description: 'After payment verification, the trainer\'s WhatsApp and phone unlock automatically. Chat through Liftrz or switch to direct contact.',
     icon: LockKeyhole
   },
   {
     number: '06',
     title: 'Start training',
-    description: 'Begin your sessions. Track progress, log weight, and communicate with your trainer. CoachSet monitors chats for safety and dispute resolution.',
+    description: 'Begin your sessions. Track progress, log weight, and communicate with your trainer. Liftrz monitors chats for safety and dispute resolution.',
     icon: CheckCircle2
   }
 ];
@@ -47,14 +47,14 @@ export default function HowItWorks() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="How It Works | CoachSet Pakistan"
-          description="A simple 6-step guide to finding, booking, and training with verified personal trainers in Pakistan through CoachSet."
-          canonical="https://coachset-pakistan.vercel.app/how-it-works"
+          title="How It Works | Liftrz Pakistan"
+          description="A simple 6-step guide to finding, booking, and training with verified personal trainers in Pakistan through Liftrz."
+          canonical="https://liftrz.vercel.app/how-it-works"
         />
 
         <HeroBlock
           kicker="Simple process"
-          title="How CoachSet works"
+          title="How Liftrz works"
           description="From browsing to your first session in 6 simple steps. No guesswork, no hidden fees."
           actions={
             <Link to="/discover" className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark">
@@ -100,7 +100,7 @@ export default function HowItWorks() {
               <ul className="mt-4 space-y-2 text-sm text-slate-400">
                 <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> No payment required to send an inquiry</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Pay via bank transfer, JazzCash, or EasyPaisa</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Upload receipt screenshot to CoachSet</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Upload receipt screenshot to Liftrz</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Admin verifies within 24 hours</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Trainer contact unlocks automatically after verification</li>
               </ul>
@@ -115,7 +115,7 @@ export default function HowItWorks() {
           <div className="grid items-center gap-6 md:grid-cols-[1fr_auto]">
             <div>
               <h2 className="text-xl font-bold text-white">What if I don't like my trainer?</h2>
-              <p className="mt-2 text-sm text-slate-400">Your first session is your evaluation period. If things don't click, you can open a dispute from your dashboard within 7 days. CoachSet reviews each case and offers resolution options including trainer replacement where possible.</p>
+              <p className="mt-2 text-sm text-slate-400">Your first session is your evaluation period. If things don't click, you can open a dispute from your dashboard within 7 days. Liftrz reviews each case and offers resolution options including trainer replacement where possible.</p>
             </div>
             <Link to="/faq" className="inline-flex items-center gap-2 rounded-full border border-slate-700/50 px-6 py-3 text-sm font-semibold text-slate-300 hover:bg-surface-high">
               Read FAQ <ArrowRight className="h-4 w-4" />

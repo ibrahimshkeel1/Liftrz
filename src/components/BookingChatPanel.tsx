@@ -78,7 +78,7 @@ export default function BookingChatPanel({ booking, title = 'Secure chat', readO
     event.preventDefault();
     if (readOnly || (!text.trim() && !attachment)) return;
     if (detectContactLeak(text)) {
-      setStatus('CoachSet policy: do not share phone numbers or external links in chat. Use the platform to stay protected.');
+      setStatus('Liftrz policy: do not share phone numbers or external links in chat. Use the platform to stay protected.');
       return;
     }
     setStatus('sending');
@@ -105,7 +105,7 @@ export default function BookingChatPanel({ booking, title = 'Secure chat', readO
     try {
       const dataUrl = await fileToDataUrl(file);
       const upload = await api.uploadFile({
-        bucket: 'coachset-private',
+        bucket: 'Liftrz-private',
         folder: 'chat-attachments',
         fileName: file.name,
         dataUrl

@@ -8,22 +8,22 @@ export default function About() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="About Us | CoachSet Pakistan"
-          description="CoachSet is Pakistan's verified personal trainer marketplace. Learn about our mission, how we verify trainers, and why we started."
-          canonical="https://coachset-pakistan.vercel.app/about"
+          title="About Us | Liftrz Pakistan"
+          description="Liftrz is Pakistan's verified personal trainer marketplace. Learn about our mission, how we verify trainers, and why we started."
+          canonical="https://liftrz.vercel.app/about"
         />
 
         <HeroBlock
           kicker="Our story"
           title="Building trust in Pakistan fitness"
-          description="CoachSet was created to solve a simple problem: finding a reliable personal trainer in Pakistan is harder than it should be."
+          description="Liftrz was created to solve a simple problem: finding a reliable personal trainer in Pakistan is harder than it should be."
         />
 
         <section className="mt-10 grid gap-6 md:grid-cols-3">
           <Surface className="p-6">
             <ShieldCheck className="h-8 w-8 text-primary" />
             <h3 className="mt-4 text-lg font-semibold text-white">Verified trainers</h3>
-            <p className="mt-2 text-sm leading-7 text-slate-400">Every trainer on CoachSet submits CNIC and certifications. We review each application before they go live.</p>
+            <p className="mt-2 text-sm leading-7 text-slate-400">Every trainer on Liftrz submits CNIC and certifications. We review each application before they go live.</p>
           </Surface>
           <Surface className="p-6">
             <Star className="h-8 w-8 text-primary" />
@@ -39,8 +39,8 @@ export default function About() {
 
         <section className="mt-12">
           <SectionTitle
-            title="Why we started CoachSet"
-            description="The fitness industry in Pakistan is fragmented. Great trainers struggle to find clients. Clients struggle to find great trainers. CoachSet bridges that gap with verification, transparency, and protection for both sides."
+            title="Why we started Liftrz"
+            description="The fitness industry in Pakistan is fragmented. Great trainers struggle to find clients. Clients struggle to find great trainers. Liftrz bridges that gap with verification, transparency, and protection for both sides."
           />
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="flex items-start gap-3">

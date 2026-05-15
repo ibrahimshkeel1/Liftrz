@@ -96,7 +96,7 @@ export default function Register() {
         });
         if (data?.token && data?.user) {
           setSession({ token: data.token, user: data.user });
-          toast.addToast('Welcome to CoachSet', 'success');
+          toast.addToast('Welcome to Liftrz', 'success');
           navigate(roleHome(data.user.role));
           return;
         }
@@ -115,13 +115,13 @@ export default function Register() {
     <PageShell>
       <PageContainer>
         <SEO
-          title={`${role === 'trainer' ? 'Register as a Personal Trainer' : 'Create a Client Account'} | CoachSet Pakistan`}
-          description="Join CoachSet Pakistan to book verified personal trainers or register as a trainer for Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Gujranwala, Sialkot and online coaching."
-          canonical={`https://coachset-pakistan.vercel.app/register/${role}`}
+          title={`${role === 'trainer' ? 'Register as a Personal Trainer' : 'Create a Client Account'} | Liftrz Pakistan`}
+          description="Join Liftrz Pakistan to book verified personal trainers or register as a trainer for Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Gujranwala, Sialkot and online coaching."
+          canonical={`https://liftrz.vercel.app/register/${role}`}
         />
 
         <HeroBlock
-          kicker="CoachSet onboarding"
+          kicker="Liftrz onboarding"
           title={role === 'trainer' ? 'Trainer application' : 'Client registration'}
           description={role === 'trainer'
             ? 'Apply to sell verified training packages in Pakistan. Your profile stays hidden until admin approval.'
@@ -137,7 +137,7 @@ export default function Register() {
               </div>
               <div className="mt-6 grid gap-3 text-sm text-slate-400">
                 <div className="flex gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" /> CNIC and certification review for trainers.</div>
-                <div className="flex gap-3"><Banknote className="mt-0.5 h-5 w-5 shrink-0 text-primary" /> Payments stay inside CoachSet for commission control.</div>
+                <div className="flex gap-3"><Banknote className="mt-0.5 h-5 w-5 shrink-0 text-primary" /> Payments stay inside Liftrz for commission control.</div>
                 <div className="flex gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" /> Reviews are linked to completed bookings.</div>
               </div>
             </Surface>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'coachset-v3';
+const CACHE_NAME = 'Liftrz-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',

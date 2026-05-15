@@ -39,7 +39,7 @@ export default function Discover() {
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
-    setFavorites(JSON.parse(window.localStorage.getItem('coachset-favorites') || '[]'));
+    setFavorites(JSON.parse(window.localStorage.getItem('Liftrz-favorites') || '[]'));
   }, []);
 
   useEffect(() => {
@@ -128,9 +128,9 @@ export default function Discover() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Find Personal Trainers in Pakistan | CoachSet Discover"
+          title="Find Personal Trainers in Pakistan | Liftrz Discover"
           description="Search verified personal trainers in Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Gujranwala and Sialkot by specialty, price, rating, gender, response time and training mode."
-          canonical="https://coachset-pakistan.vercel.app/discover"
+          canonical="https://liftrz.vercel.app/discover"
           jsonLd={{
             '@context': 'https://schema.org',
             '@type': 'ItemList',
@@ -139,7 +139,7 @@ export default function Discover() {
               '@type': 'ListItem',
               position: index + 1,
               name: trainer.name,
-              url: `https://coachset-pakistan.vercel.app/trainer/${trainer.id}`
+              url: `https://liftrz.vercel.app/trainer/${trainer.id}`
             }))
           }}
         />

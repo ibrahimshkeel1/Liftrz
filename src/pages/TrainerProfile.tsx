@@ -136,9 +136,9 @@ export default function TrainerProfile() {
     <PageShell>
       <PageContainer>
         <SEO
-          title={`${trainer.name} | ${trainer.specialty} Personal Trainer in ${trainer.city} | CoachSet`}
-          description={`Book ${trainer.name}, a verified ${trainer.specialty} personal trainer in ${trainer.city}, Pakistan. Compare packages, reviews and PKR pricing on CoachSet.`}
-          canonical={`https://coachset-pakistan.vercel.app/trainer/${trainer.id}`}
+          title={`${trainer.name} | ${trainer.specialty} Personal Trainer in ${trainer.city} | Liftrz`}
+          description={`Book ${trainer.name}, a verified ${trainer.specialty} personal trainer in ${trainer.city}, Pakistan. Compare packages, reviews and PKR pricing on Liftrz.`}
+          canonical={`https://liftrz.vercel.app/trainer/${trainer.id}`}
           jsonLd={{
             '@context': 'https://schema.org',
             '@type': 'Person',
@@ -202,8 +202,8 @@ export default function TrainerProfile() {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              <ShareButton label="WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`Check out ${trainer.name} on CoachSet: https://coachset-pakistan.vercel.app/trainer/${trainer.id}`)}`} />
-              <CopyLinkButton url={`https://coachset-pakistan.vercel.app/trainer/${trainer.id}`} />
+              <ShareButton label="WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`Check out ${trainer.name} on Liftrz: https://liftrz.vercel.app/trainer/${trainer.id}`)}`} />
+              <CopyLinkButton url={`https://liftrz.vercel.app/trainer/${trainer.id}`} />
             </div>
           </div>
         </section>
@@ -272,7 +272,7 @@ export default function TrainerProfile() {
               ) : !clientSession ? (
                 <div className="mt-6 rounded-xl border border-slate-700/50 bg-surface-high/50 p-6">
                   <h3 className="font-semibold text-white">Login to send inquiry</h3>
-                  <p className="mt-2 text-sm text-slate-400">Create a free account so the trainer can respond to you directly through CoachSet.</p>
+                  <p className="mt-2 text-sm text-slate-400">Create a free account so the trainer can respond to you directly through Liftrz.</p>
                   <div className="mt-5 flex flex-wrap gap-3">
                     <Link to="/login/client" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-dark">Login</Link>
                     <Link to="/register/client" className="rounded-xl border border-slate-700/50 px-5 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:bg-surface-high">Create account</Link>
@@ -351,8 +351,8 @@ export default function TrainerProfile() {
         {/* How it works */}
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           <StepCard number="1" title="Send inquiry" description="Tell the trainer about your goals, schedule, and budget. Completely free." />
-          <StepCard number="2" title="Chat & agree" description="The trainer responds with a personalized package. Discuss details through CoachSet." />
-          <StepCard number="3" title="Pay & start" description="Pay through CoachSet. Admin verifies, then your trainer's contact unlocks." />
+          <StepCard number="2" title="Chat & agree" description="The trainer responds with a personalized package. Discuss details through Liftrz." />
+          <StepCard number="3" title="Pay & start" description="Pay through Liftrz. Admin verifies, then your trainer's contact unlocks." />
         </div>
 
         {/* Write a Review */}

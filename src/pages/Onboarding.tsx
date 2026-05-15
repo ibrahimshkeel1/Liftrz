@@ -38,9 +38,9 @@ export default function Onboarding() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Client Onboarding | CoachSet Pakistan"
-          description="Choose your main fitness objective before browsing verified personal trainers in Pakistan on CoachSet."
-          canonical="https://coachset-pakistan.vercel.app/onboarding"
+          title="Client Onboarding | Liftrz Pakistan"
+          description="Choose your main fitness objective before browsing verified personal trainers in Pakistan on Liftrz."
+          canonical="https://liftrz.vercel.app/onboarding"
         />
 
         <HeroBlock
@@ -91,7 +91,7 @@ export default function Onboarding() {
 
           <div className="grid gap-6">
             <Surface className="p-6">
-              <SectionTitle title="What happens next" description="After this step, CoachSet takes you straight into the filtered trainer marketplace." />
+              <SectionTitle title="What happens next" description="After this step, Liftrz takes you straight into the filtered trainer marketplace." />
               <div className="grid gap-4">
                 <Step number="01" text="Apply your chosen goal to discovery results." />
                 <Step number="02" text="Compare city, price, rating, response time and completed bookings." />

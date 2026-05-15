@@ -16,8 +16,8 @@ export interface SessionData {
   user: SessionUser;
 }
 
-const SESSION_KEY = 'coachset-session';
-const SESSION_EVENT = 'coachset-session-change';
+const SESSION_KEY = 'Liftrz-session';
+const SESSION_EVENT = 'Liftrz-session-change';
 
 export const getSession = (): SessionData | null => {
   if (typeof window === 'undefined') return null;

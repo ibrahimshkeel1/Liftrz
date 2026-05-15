@@ -8,15 +8,15 @@ export default function Refer() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Refer & Earn | CoachSet Pakistan"
-          description="Invite friends to CoachSet and earn PKR 500 credit for every successful referral."
-          canonical="https://coachset-pakistan.vercel.app/refer"
+          title="Refer & Earn | Liftrz Pakistan"
+          description="Invite friends to Liftrz and earn PKR 500 credit for every successful referral."
+          canonical="https://liftrz.vercel.app/refer"
         />
 
         <HeroBlock
           kicker="Refer & earn"
           title="Invite friends, get rewarded"
-          description="Share CoachSet with friends who are looking for a trainer. You both get PKR 500 credit when they complete their first booking."
+          description="Share Liftrz with friends who are looking for a trainer. You both get PKR 500 credit when they complete their first booking."
         />
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -33,7 +33,7 @@ export default function Refer() {
           <Surface className="p-6 text-center">
             <Gift className="mx-auto h-8 w-8 text-primary" />
             <h3 className="mt-4 text-lg font-semibold text-white">3. Both get PKR 500</h3>
-            <p className="mt-2 text-sm text-slate-400">After their first verified booking, you both receive PKR 500 credit in your CoachSet wallet.</p>
+            <p className="mt-2 text-sm text-slate-400">After their first verified booking, you both receive PKR 500 credit in your Liftrz wallet.</p>
           </Surface>
         </div>
 

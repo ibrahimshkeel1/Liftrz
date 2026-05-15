@@ -90,9 +90,9 @@ export default function Dashboard() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Trainer Dashboard | CoachSet Pakistan"
+          title="Trainer Dashboard | Liftrz Pakistan"
           description="Trainer dashboard for client bookings, verified reviews, revenue, commission, payout tracking and response performance."
-          canonical="https://coachset-pakistan.vercel.app/trainer/dashboard"
+          canonical="https://liftrz.vercel.app/trainer/dashboard"
         />
 
         <HeroBlock
@@ -150,7 +150,7 @@ export default function Dashboard() {
                   <p className="mt-1 text-xs text-slate-500">Commission: {Math.round((booking.commissionRate || 0.15) * 100)}%</p>
                 </div>
                 <div className="grid gap-3 text-right text-sm">
-                  <p>CoachSet: {money(booking.commissionAmount)}</p>
+                  <p>Liftrz: {money(booking.commissionAmount)}</p>
                   <p className="text-slate-400">Your cut: {money(booking.trainerPayoutAmount)}</p>
                   {booking.contactUnlocked && (
                     <button type="button" onClick={() => setSelectedChatId(selectedChatId === booking.id ? '' : booking.id)} className="justify-self-end rounded-full bg-primary px-3 py-2 text-xs font-medium text-black">

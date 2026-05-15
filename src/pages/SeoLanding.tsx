@@ -5,7 +5,7 @@ import SEO from '../components/SEO';
 import { api } from '../utils/api';
 import { HeroBlock, MetricCard, PageContainer, PageShell, SectionTitle, Surface } from '../components/premium';
 
-const baseUrl = 'https://coachset-pakistan.vercel.app';
+const baseUrl = 'https://liftrz.vercel.app';
 
 const pages: Record<string, {
   title: string;
@@ -21,14 +21,14 @@ const pages: Record<string, {
   related: Array<{ label: string; href: string }>;
 }> = {
   '/personal-trainer-lahore': {
-    title: 'Personal Trainer Lahore | Verified Fitness Coaches | CoachSet',
+    title: 'Personal Trainer Lahore | Verified Fitness Coaches | Liftrz',
     description: 'Find verified personal trainers in Lahore for gym, home and online coaching. Compare PKR pricing, reviews, completed bookings and trainer availability.',
     kicker: 'Lahore trainer marketplace',
     h1: 'Book a verified personal trainer in Lahore',
     city: 'Lahore',
     areas: ['DHA', 'Gulberg', 'Model Town', 'Johar Town', 'Bahria Town'],
     faqs: [
-      { question: 'How much does a personal trainer cost in Lahore?', answer: 'CoachSet lets clients compare session prices in PKR before booking. Prices vary by trainer experience, mode and package length.' },
+      { question: 'How much does a personal trainer cost in Lahore?', answer: 'Liftrz lets clients compare session prices in PKR before booking. Prices vary by trainer experience, mode and package length.' },
       { question: 'Can I book a home personal trainer in Lahore?', answer: 'Yes. Use the Home Visit filter to find trainers who can train clients at home or in private spaces.' },
       { question: 'Are Lahore trainer reviews verified?', answer: 'Reviews are tied to bookings in the platform, so fake public reviews are reduced.' }
     ],
@@ -39,7 +39,7 @@ const pages: Record<string, {
     ]
   },
   '/personal-trainer-karachi': {
-    title: 'Personal Trainer Karachi | Home, Gym and Online Coaches | CoachSet',
+    title: 'Personal Trainer Karachi | Home, Gym and Online Coaches | Liftrz',
     description: 'Compare verified personal trainers in Karachi by area, rating, price, gender, response time and training mode.',
     kicker: 'Karachi trainer marketplace',
     h1: 'Find a personal trainer in Karachi without guessing',
@@ -47,7 +47,7 @@ const pages: Record<string, {
     areas: ['Clifton', 'DHA', 'PECHS', 'Gulshan', 'North Nazimabad'],
     faqs: [
       { question: 'Can I compare Karachi trainers before paying?', answer: 'Yes. Discovery shows rating, clients, completed bookings, service mode and package price before you submit payment proof.' },
-      { question: 'Does CoachSet support home trainers in Karachi?', answer: 'Yes. Many trainers can offer gym, home visit or online coaching depending on availability.' },
+      { question: 'Does Liftrz support home trainers in Karachi?', answer: 'Yes. Many trainers can offer gym, home visit or online coaching depending on availability.' },
       { question: 'When does trainer contact unlock?', answer: 'Contact unlocks after admin verifies the payment receipt.' }
     ],
     related: [
@@ -57,14 +57,14 @@ const pages: Record<string, {
     ]
   },
   '/personal-trainer-islamabad': {
-    title: 'Personal Trainer Islamabad | Verified Coaches | CoachSet',
+    title: 'Personal Trainer Islamabad | Verified Coaches | Liftrz',
     description: 'Book verified personal trainers in Islamabad for fat loss, strength, muscle gain, rehab and online coaching.',
     kicker: 'Islamabad trainer marketplace',
     h1: 'Compare verified personal trainers in Islamabad',
     city: 'Islamabad',
     areas: ['F-6', 'F-7', 'F-8', 'F-11', 'Blue Area'],
     faqs: [
-      { question: 'Can I find online and in-person trainers in Islamabad?', answer: 'Yes. CoachSet supports both location-based and online coaching options.' },
+      { question: 'Can I find online and in-person trainers in Islamabad?', answer: 'Yes. Liftrz supports both location-based and online coaching options.' },
       { question: 'What should I check before booking?', answer: 'Check rating, completed bookings, response time, service mode, area and package details.' },
       { question: 'Is payment tracked?', answer: 'Yes. Payment proof is submitted inside the platform before trainer contact unlocks.' }
     ],
@@ -75,7 +75,7 @@ const pages: Record<string, {
     ]
   },
   '/personal-trainer-rawalpindi': {
-    title: 'Personal Trainer Rawalpindi | Verified Gym Trainers | CoachSet',
+    title: 'Personal Trainer Rawalpindi | Verified Gym Trainers | Liftrz',
     description: 'Search verified personal trainers in Rawalpindi and nearby Islamabad areas with transparent prices and booking records.',
     kicker: 'Rawalpindi trainer marketplace',
     h1: 'Book verified personal trainers in Rawalpindi',
@@ -93,16 +93,16 @@ const pages: Record<string, {
     ]
   },
   '/personal-trainer-faisalabad': {
-    title: 'Personal Trainer Faisalabad | Verified Fitness Coaches | CoachSet',
+    title: 'Personal Trainer Faisalabad | Verified Fitness Coaches | Liftrz',
     description: 'Find verified personal trainers in Faisalabad for gym, home and online coaching. Compare PKR prices, reviews, training mode and availability.',
     kicker: 'Faisalabad trainer marketplace',
     h1: 'Book a verified personal trainer in Faisalabad',
     city: 'Faisalabad',
     areas: ['D Ground', 'Madina Town', 'People Colony', 'Susan Road', 'Canal Road'],
     faqs: [
-      { question: 'Can I find verified trainers in Faisalabad?', answer: 'Yes. CoachSet supports Faisalabad in discovery and lets clients compare trainer profiles before booking.' },
+      { question: 'Can I find verified trainers in Faisalabad?', answer: 'Yes. Liftrz supports Faisalabad in discovery and lets clients compare trainer profiles before booking.' },
       { question: 'Can Faisalabad trainers offer home visits?', answer: 'Use the Home Visit filter to find trainers who can train clients at home or private spaces.' },
-      { question: 'How does payment verification work?', answer: 'Clients submit payment proof inside CoachSet. Contact unlocks after admin verifies the receipt.' }
+      { question: 'How does payment verification work?', answer: 'Clients submit payment proof inside Liftrz. Contact unlocks after admin verifies the receipt.' }
     ],
     related: [
       { label: 'Personal trainer Lahore', href: '/personal-trainer-lahore' },
@@ -111,14 +111,14 @@ const pages: Record<string, {
     ]
   },
   '/personal-trainer-gujranwala': {
-    title: 'Personal Trainer Gujranwala | Verified Gym Trainers | CoachSet',
+    title: 'Personal Trainer Gujranwala | Verified Gym Trainers | Liftrz',
     description: 'Search verified personal trainers in Gujranwala for strength, fat loss, muscle gain and online coaching with transparent PKR pricing.',
     kicker: 'Gujranwala trainer marketplace',
     h1: 'Find a verified personal trainer in Gujranwala',
     city: 'Gujranwala',
     areas: ['Model Town', 'Satellite Town', 'Wapda Town', 'DC Colony', 'Peoples Colony'],
     faqs: [
-      { question: 'Does CoachSet list Gujranwala trainers?', answer: 'Yes. Gujranwala is available as a city filter and has a dedicated landing page for search visibility.' },
+      { question: 'Does Liftrz list Gujranwala trainers?', answer: 'Yes. Gujranwala is available as a city filter and has a dedicated landing page for search visibility.' },
       { question: 'Can I compare trainer ratings?', answer: 'Yes. Discovery shows ratings, completed bookings, active clients, response time and package pricing.' },
       { question: 'Can trainers register from Gujranwala?', answer: 'Yes. Trainers can submit an application and go live after admin approval.' }
     ],
@@ -129,14 +129,14 @@ const pages: Record<string, {
     ]
   },
   '/personal-trainer-sialkot': {
-    title: 'Personal Trainer Sialkot | Verified Fitness Coaches | CoachSet',
+    title: 'Personal Trainer Sialkot | Verified Fitness Coaches | Liftrz',
     description: 'Find verified personal trainers in Sialkot for gym, home visit and online coaching. Compare reviews, package prices and availability.',
     kicker: 'Sialkot trainer marketplace',
     h1: 'Book verified personal trainers in Sialkot',
     city: 'Sialkot',
     areas: ['Cantt', 'Daska Road', 'Paris Road', 'Kashmir Road', 'Model Town'],
     faqs: [
-      { question: 'Can I book personal trainers in Sialkot?', answer: 'Yes. CoachSet includes Sialkot in city filters and search landing pages.' },
+      { question: 'Can I book personal trainers in Sialkot?', answer: 'Yes. Liftrz includes Sialkot in city filters and search landing pages.' },
       { question: 'What trainer details should I compare?', answer: 'Compare rating, completed bookings, price, response time, service modes and profile verification.' },
       { question: 'Is online coaching available for Sialkot clients?', answer: 'Yes. Clients can choose local trainers or use online coaching from approved trainers across Pakistan.' }
     ],
@@ -147,7 +147,7 @@ const pages: Record<string, {
     ]
   },
   '/online-fitness-coach-pakistan': {
-    title: 'Online Fitness Coach Pakistan | Verified Online Trainers | CoachSet',
+    title: 'Online Fitness Coach Pakistan | Verified Online Trainers | Liftrz',
     description: 'Find online fitness coaches in Pakistan for fat loss, strength, muscle gain and habit-based coaching with verified reviews and payment tracking.',
     kicker: 'Online coaching Pakistan',
     h1: 'Hire an online fitness coach in Pakistan',
@@ -166,7 +166,7 @@ const pages: Record<string, {
     ]
   },
   '/female-personal-trainer-lahore': {
-    title: 'Female Personal Trainer Lahore | Verified Coaches | CoachSet',
+    title: 'Female Personal Trainer Lahore | Verified Coaches | Liftrz',
     description: 'Find female personal trainers in Lahore for gym, home and online coaching. Compare reviews, prices, service modes and availability.',
     kicker: 'Female trainers Lahore',
     h1: 'Find a female personal trainer in Lahore',
@@ -185,7 +185,7 @@ const pages: Record<string, {
     ]
   },
   '/home-personal-trainer-karachi': {
-    title: 'Home Personal Trainer Karachi | Verified Home Visit Trainers | CoachSet',
+    title: 'Home Personal Trainer Karachi | Verified Home Visit Trainers | Liftrz',
     description: 'Book home personal trainers in Karachi for strength, fat loss and general fitness. Compare verified trainers by area, rating and price.',
     kicker: 'Home trainer Karachi',
     h1: 'Book a home personal trainer in Karachi',
@@ -194,8 +194,8 @@ const pages: Record<string, {
     areas: ['Clifton', 'DHA', 'PECHS', 'Gulshan', 'North Nazimabad'],
     faqs: [
       { question: 'How do I find home visit trainers in Karachi?', answer: 'Use the Home Visit mode filter to see trainers who offer coaching at home or private spaces.' },
-      { question: 'Can I compare trainer prices?', answer: 'Yes. CoachSet shows package and session pricing in PKR before you submit a booking.' },
-      { question: 'Why does CoachSet lock trainer contact?', answer: 'Contact locking keeps bookings traceable and protects the marketplace from direct bypass.' }
+      { question: 'Can I compare trainer prices?', answer: 'Yes. Liftrz shows package and session pricing in PKR before you submit a booking.' },
+      { question: 'Why does Liftrz lock trainer contact?', answer: 'Contact locking keeps bookings traceable and protects the marketplace from direct bypass.' }
     ],
     related: [
       { label: 'Personal trainer Karachi', href: '/personal-trainer-karachi' },

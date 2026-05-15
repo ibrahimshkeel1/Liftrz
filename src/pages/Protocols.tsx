@@ -92,15 +92,15 @@ export default function Protocols() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Trainer Packages | CoachSet Pakistan"
-          description="Create and manage standardized coaching packages, pricing, duration and offer features from the CoachSet trainer dashboard."
-          canonical="https://coachset-pakistan.vercel.app/lab"
+          title="Trainer Packages | Liftrz Pakistan"
+          description="Create and manage standardized coaching packages, pricing, duration and offer features from the Liftrz trainer dashboard."
+          canonical="https://liftrz.vercel.app/lab"
         />
 
         <HeroBlock
           kicker="Protocol catalog"
           title="Build offers clients can compare fast."
-          description="CoachSet works better when packages are standardized. Define duration, price and what is included so discovery and booking stay clear."
+          description="Liftrz works better when packages are standardized. Define duration, price and what is included so discovery and booking stay clear."
           actions={
             <button type="button" onClick={() => setModalOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark">
               <Plus className="h-4 w-4" /> New protocol
@@ -141,7 +141,7 @@ export default function Protocols() {
                 <Surface className="overflow-hidden">
                 <div className="flex items-start justify-between gap-4 border-b border-slate-700/50 px-6 py-5">
                   <div>
-                    <p className="text-xs font-semibold text-primary">CoachSet package</p>
+                    <p className="text-xs font-semibold text-primary">Liftrz package</p>
                     <h2 className="editorial-header mt-2 text-3xl font-bold text-white">{protocol.title}</h2>
                   </div>
                   <button type="button" disabled={deletingId === protocol.id} onClick={() => handleDelete(protocol.id)} className="rounded-full border border-slate-700/50 bg-surface-high/80 p-3 text-slate-400 transition hover:border-rose-500/40 hover:text-rose-300 disabled:opacity-50">

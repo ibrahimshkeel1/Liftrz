@@ -76,11 +76,11 @@ export default function Blog() {
         <SEO
           title="Fitness Blog | Personal Training Tips for Pakistan"
           description="Guides on finding trainers, pricing, home workouts, wedding fitness, and online coaching in Pakistan."
-          canonical="https://coachset-pakistan.vercel.app/blog"
+          canonical="https://liftrz.vercel.app/blog"
         />
 
         <HeroBlock
-          kicker="CoachSet blog"
+          kicker="Liftrz blog"
           title="Fitness tips for Pakistan"
           description="Practical guides on finding trainers, understanding pricing, and reaching your fitness goals."
         />

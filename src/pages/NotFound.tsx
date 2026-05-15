@@ -8,7 +8,7 @@ export default function NotFound() {
     <PageShell>
       <PageContainer>
         <SEO
-          title="Page Not Found | CoachSet Pakistan"
+          title="Page Not Found | Liftrz Pakistan"
           description="The page you are looking for does not exist."
         />
 

@@ -1,4 +1,4 @@
-const FAVORITES_KEY = 'coachset-favorites';
+const FAVORITES_KEY = 'Liftrz-favorites';
 
 export function getFavorites(): string[] {
   if (typeof window === 'undefined') return [];

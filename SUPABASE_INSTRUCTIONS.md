@@ -13,7 +13,7 @@ After this, your site starts completely blank. Real trainers must apply and you 
 
 ### 1. Go to Supabase
 - Open https://supabase.com
-- Click your CoachSet project
+- Click your Liftrz project
 - Click **"SQL Editor"** in the left sidebar
 
 ### 2. Create a new query
@@ -37,7 +37,7 @@ This means:
 - ✅ 0 leads
 
 ### 4. Check your website
-- Open https://coachset-pakistan.vercel.app
+- Open https://liftrz.vercel.app
 - Hard refresh: **Ctrl + Shift + R**
 - Go to **Discover** — it should say **"No trainers yet"**
 - Go to **Admin** and log in with:
@@ -55,4 +55,4 @@ This means:
 **Yes.** All data was demo/fake anyway. This gives you a completely clean slate.
 
 ## If something goes wrong
-The script only touches the `coachset_state` table. If anything breaks, just re-run the SQL script again. It resets everything to the same clean state every time.
+The script only touches the `Liftrz_state` table. If anything breaks, just re-run the SQL script again. It resets everything to the same clean state every time.

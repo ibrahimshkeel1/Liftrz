@@ -173,7 +173,7 @@ const ensureStorageBucket = async (bucket) => {
   }
 };
 
-const uploadObject = async ({ bucket = 'coachset-private', folder = 'receipts', fileName, dataUrl }) => {
+const uploadObject = async ({ bucket = 'Liftrz-private', folder = 'receipts', fileName, dataUrl }) => {
   if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error('Supabase storage is not configured.');
   }
@@ -218,7 +218,7 @@ const migrateLegacyUsers = async () => {
   db.users = db.users.map((user) => {
     const nextUser = { ...user };
     if (!nextUser.passwordHash) {
-      nextUser.passwordHash = hashPassword(nextUser.password || 'coachset123');
+      nextUser.passwordHash = hashPassword(nextUser.password || 'Liftrz123');
       changed = true;
     }
     if (nextUser.password) {
@@ -1144,7 +1144,7 @@ app.patch('/api/admin/payments/:id/verify', requireRole('admin'), route(async (r
             type: 'system',
             event: 'chat_opened',
             senderRole: 'system',
-            senderName: 'CoachSet',
+            senderName: 'Liftrz',
             text: 'Payment verified by admin. Secure client-trainer chat is now open and visible to admin.',
             createdAt: now,
             adminVisible: true
@@ -1287,7 +1287,7 @@ app.get('/api/health/storage', route(async (_req, res) => {
 
 app.post('/api/uploads', route(async (req, res) => {
   const upload = await uploadObject({
-    bucket: req.body.bucket || 'coachset-private',
+    bucket: req.body.bucket || 'Liftrz-private',
     folder: req.body.folder || 'receipts',
     fileName: req.body.fileName,
     dataUrl: req.body.dataUrl
@@ -1325,7 +1325,7 @@ app.use((error, _req, res, _next) => {
 
 if (!isServerless) {
   app.listen(PORT, () => {
-    console.log(`CoachSet marketplace API running on http://localhost:${PORT}`);
+    console.log(`Liftrz marketplace API running on http://localhost:${PORT}`);
   });
 }
 

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://coachset-pakistan.vercel.app/sitemap.xml
+Sitemap: https://liftrz.vercel.app/sitemap.xml

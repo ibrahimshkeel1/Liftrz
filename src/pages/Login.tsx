@@ -54,13 +54,13 @@ export default function Login() {
     <PageShell>
       <PageContainer>
         <SEO
-          title={`Login as ${role[0].toUpperCase()}${role.slice(1)} | CoachSet Pakistan`}
-          description="Secure login for CoachSet clients, trainers and admin."
-          canonical={`https://coachset-pakistan.vercel.app/login/${role}`}
+          title={`Login as ${role[0].toUpperCase()}${role.slice(1)} | Liftrz Pakistan`}
+          description="Secure login for Liftrz clients, trainers and admin."
+          canonical={`https://liftrz.vercel.app/login/${role}`}
         />
 
         <HeroBlock
-          kicker="CoachSet access"
+          kicker="Liftrz access"
           title={title}
           description="Signed sessions now back the dashboards, approvals and payouts. Use the matching account role to enter the correct workspace."
           aside={

@@ -36,7 +36,7 @@ export default function SavedTrainers() {
   return (
     <PageShell>
       <PageContainer>
-        <SEO title="Saved Trainers | CoachSet Pakistan" description="Your saved trainers and shortlist." />
+        <SEO title="Saved Trainers | Liftrz Pakistan" description="Your saved trainers and shortlist." />
 
         <HeroBlock
           kicker="Shortlist"

@@ -19,17 +19,17 @@ export default function Home() {
   return (
     <div className="relative overflow-hidden bg-background">
       <SEO
-        title="CoachSet Pakistan | Find Verified Personal Trainers Near You"
+        title="Liftrz Pakistan | Find Verified Personal Trainers Near You"
         description="Find and book verified personal trainers in Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Gujranwala and Sialkot. Compare prices, read real reviews, book a free trial."
-        canonical="https://coachset-pakistan.vercel.app/"
+        canonical="https://liftrz.vercel.app/"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'WebSite',
-          name: 'CoachSet Pakistan',
-          url: 'https://coachset-pakistan.vercel.app/',
+          name: 'Liftrz Pakistan',
+          url: 'https://liftrz.vercel.app/',
           potentialAction: {
             '@type': 'SearchAction',
-            target: 'https://coachset-pakistan.vercel.app/discover?q={search_term_string}',
+            target: 'https://liftrz.vercel.app/discover?q={search_term_string}',
             'query-input': 'required name=search_term_string'
           }
         }}
@@ -93,7 +93,7 @@ export default function Home() {
       <section className="border-t border-slate-700/30 bg-surface px-5 py-16 md:px-6">
         <div className="mx-auto max-w-7xl">
           <div className="mb-10">
-            <h2 className="editorial-header text-3xl font-bold text-white md:text-4xl">How CoachSet works</h2>
+            <h2 className="editorial-header text-3xl font-bold text-white md:text-4xl">How Liftrz works</h2>
             <p className="mt-3 text-slate-400">Find, compare, and book in minutes.</p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
