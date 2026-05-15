@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en-PK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>CoachSet Pakistan | Find Verified Personal Trainers in Pakistan</title>
+    <meta name="description" content="CoachSet helps clients in Pakistan find verified personal trainers, compare PKR pricing, read real reviews, and book gym, home, or online coaching through a commission-protected marketplace." />
+    <meta name="keywords" content="personal trainer Pakistan, gym trainer Lahore, fitness coach Karachi, online fitness coach Pakistan, personal trainer Islamabad, home personal trainer Pakistan, verified fitness trainers, CoachSet" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="CoachSet" />
+    <meta name="geo.region" content="PK" />
+    <link rel="canonical" href="https://coachset-pakistan.vercel.app/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CoachSet Pakistan" />
+    <meta property="og:title" content="CoachSet Pakistan | Verified Personal Trainers" />
+    <meta property="og:description" content="Discover verified personal trainers in Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Gujranwala, Sialkot and online. Compare reviews, packages, PKR pricing and book securely through CoachSet." />
+    <meta property="og:url" content="https://coachset-pakistan.vercel.app/" />
+    <meta property="og:image" content="https://coachset-pakistan.vercel.app/og-image.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CoachSet Pakistan | Verified Personal Trainers" />
+    <meta name="twitter:description" content="Find and book verified fitness coaches in Pakistan with transparent pricing, reviews and secure booking." />
+    <meta name="theme-color" content="#0B0F19" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <!-- Google tag (gtag.js) - Replace G-XXXXXXXXXX with your GA4 ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BSBCMLLRNM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-BSBCMLLRNM');
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "CoachSet Pakistan",
+        "url": "https://coachset-pakistan.vercel.app/",
+        "logo": "https://coachset-pakistan.vercel.app/logo.svg",
+        "areaServed": ["Pakistan", "Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad", "Gujranwala", "Sialkot"],
+        "sameAs": []
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "CoachSet Pakistan",
+        "url": "https://coachset-pakistan.vercel.app/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://coachset-pakistan.vercel.app/discover?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="error-display" style="display:none; padding: 24px; color: #ef4444; background: #0B0F19; min-height: 100vh; font-family: monospace;"></div>
+    <script>
+      (function() {
+        var errorDiv = document.getElementById('error-display');
+        function showError(title, msg) {
+          errorDiv.style.display = 'block';
+          errorDiv.innerHTML = '<h2 style="color:#F97316; margin-bottom:12px;">' + title + '</h2><pre style="white-space:pre-wrap; word-break:break-word; color:#fca5a5; font-size:13px;">' + msg + '</pre>';
+        }
+        window.addEventListener('error', function(e) {
+          showError('JavaScript Error', e.message + '\n' + (e.filename || '') + ':' + (e.lineno || 0) + '\n' + (e.error && e.error.stack ? e.error.stack : ''));
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e.reason;
+          if (reason instanceof Error) {
+            showError('Unhandled Promise Rejection', reason.message + '\n' + reason.stack);
+          } else {
+            showError('Unhandled Promise Rejection', String(reason));
+          }
+        });
+      })();
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
