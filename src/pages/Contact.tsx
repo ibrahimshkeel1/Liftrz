@@ -4,6 +4,8 @@ import { ArrowLeft, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-reac
 import SEO from '../components/SEO';
 import { useToast } from '../components/ToastProvider';
 import { HeroBlock, PageContainer, PageShell, Surface } from '../components/premium';
+import { CALL_URL, CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, EMAIL_URL, WHATSAPP_URL } from '../utils/contact';
+import { api } from '../utils/api';
 
 export default function Contact() {
   const toast = useToast();
@@ -13,11 +15,14 @@ export default function Contact() {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setStatus('loading');
-    // Since we don't have a contact API endpoint, simulate success
-    setTimeout(() => {
+    try {
+      await api.createContactMessage(form);
       setStatus('sent');
       toast.addToast('Message sent. We will reply within 24 hours.', 'success');
-    }, 1000);
+    } catch (error) {
+      setStatus('idle');
+      toast.addToast(error instanceof Error ? error.message : 'Failed to send message', 'error');
+    }
   };
 
   return (
@@ -26,7 +31,7 @@ export default function Contact() {
         <SEO
           title="Contact Us | Liftrz Pakistan"
           description="Get in touch with Liftrz Pakistan for support, partnerships, or general inquiries."
-          canonical="https://liftrz.vercel.app/contact"
+          canonical="https://liftrz.com/contact"
         />
 
         <HeroBlock
@@ -75,22 +80,31 @@ export default function Contact() {
 
           <div className="space-y-4">
             <Surface className="p-6">
-              <div className="flex items-center gap-3">
+              <a href={EMAIL_URL} className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm font-semibold text-white">Email</p>
-                  <p className="text-sm text-slate-400">hey@liftrz.com</p>
+                  <p className="text-sm text-slate-400">{CONTACT_EMAIL}</p>
                 </div>
-              </div>
+              </a>
             </Surface>
             <Surface className="p-6">
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-primary" />
+              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="flex items-center gap-3">
+                <MessageCircle className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm font-semibold text-white">WhatsApp</p>
-                  <p className="text-sm text-slate-400">+92 300 0000 001</p>
+                  <p className="text-sm text-slate-400">{CONTACT_PHONE_DISPLAY}</p>
                 </div>
-              </div>
+              </a>
+            </Surface>
+            <Surface className="p-6">
+              <a href={CALL_URL} className="flex items-center gap-3">
+                <Phone className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold text-white">Call</p>
+                  <p className="text-sm text-slate-400">{CONTACT_PHONE_DISPLAY}</p>
+                </div>
+              </a>
             </Surface>
             <Surface className="p-6">
               <div className="flex items-center gap-3">

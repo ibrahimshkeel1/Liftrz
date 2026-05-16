@@ -10,7 +10,7 @@ export default function Tools() {
         <SEO
           title="Fitness Calculators | BMI, TDEE, Body Fat | Liftrz Pakistan"
           description="Free fitness calculators for Pakistan. Calculate your BMI, daily calorie needs (TDEE), and body fat percentage."
-          canonical="https://liftrz.vercel.app/tools"
+          canonical="https://liftrz.com/tools"
         />
 
         <HeroBlock

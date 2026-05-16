@@ -191,7 +191,7 @@ export default function BlogPost() {
         <SEO
           title={`${post.title} | Liftrz Pakistan Blog`}
           description={post.title}
-          canonical={`https://liftrz.vercel.app/blog/${slug}`}
+          canonical={`https://liftrz.com/blog/${slug}`}
         />
 
         <Link to="/blog" className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-primary">

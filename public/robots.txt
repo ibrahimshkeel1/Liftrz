@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://liftrz.vercel.app/sitemap.xml
+Sitemap: https://liftrz.com/sitemap.xml

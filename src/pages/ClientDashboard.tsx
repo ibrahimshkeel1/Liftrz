@@ -45,7 +45,7 @@ export default function ClientDashboard() {
         <SEO
           title="Client Dashboard | Liftrz Pakistan"
           description="Client dashboard for Liftrz Pakistan bookings, payment status, trainer contact unlocks, active protocols and verified reviews."
-          canonical="https://liftrz.vercel.app/client/dashboard"
+          canonical="https://liftrz.com/client/dashboard"
         />
 
         <HeroBlock
@@ -95,7 +95,7 @@ export default function ClientDashboard() {
                           <button type="button" onClick={() => setSelectedChatId(selectedChatId === booking.id ? '' : booking.id)} className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-black">
                             {selectedChatId === booking.id ? 'Close chat' : 'Open chat'}
                           </button>
-                          <Link to={`/trainer/${booking.trainerId}`} className="inline-flex items-center text-xs font-medium text-primary">Open trainer profile</Link>
+                          <Link to={`/trainer/${booking.trainerSlug || booking.trainerId}`} className="inline-flex items-center text-xs font-medium text-primary">Open trainer profile</Link>
                         </div>
                       </>
                     ) : (

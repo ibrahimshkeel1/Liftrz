@@ -34,6 +34,7 @@ import Refer from './pages/Refer';
 import Compare from './pages/Compare';
 import HowItWorks from './pages/HowItWorks';
 import ForTrainers from './pages/ForTrainers';
+import TrustSafety from './pages/TrustSafety';
 import AuthGate from './components/AuthGate';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -57,6 +58,10 @@ export default function App() {
           <Route path="/online-fitness-coach-pakistan" element={<SeoLanding />} />
           <Route path="/female-personal-trainer-lahore" element={<SeoLanding />} />
           <Route path="/home-personal-trainer-karachi" element={<SeoLanding />} />
+          <Route path="/personal-trainer-dha-lahore" element={<SeoLanding />} />
+          <Route path="/female-trainer-karachi" element={<SeoLanding />} />
+          <Route path="/online-fat-loss-coach-pakistan" element={<SeoLanding />} />
+          <Route path="/home-trainer-lahore" element={<SeoLanding />} />
           <Route path="/trainer/:id" element={<TrainerProfile />} />
           <Route path="/become-trainer" element={<BecomeTrainer />} />
           <Route path="/login" element={<Login />} />
@@ -67,6 +72,7 @@ export default function App() {
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/metrics" element={<AuthGate roles={['trainer']}><Dashboard /></AuthGate>} />
           <Route path="/trainer/dashboard" element={<AuthGate roles={['trainer']}><Dashboard /></AuthGate>} />
+          <Route path="/trainer/setup" element={<AuthGate roles={['trainer']}><Dashboard /></AuthGate>} />
           <Route path="/inbox" element={<AuthGate roles={['trainer']}><LeadDetail /></AuthGate>} />
           <Route path="/lab" element={<AuthGate roles={['trainer']}><Protocols /></AuthGate>} />
           <Route path="/client" element={<AuthGate roles={['client']}><ClientDashboard /></AuthGate>} />
@@ -88,6 +94,7 @@ export default function App() {
           <Route path="/compare" element={<Compare />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/for-trainers" element={<ForTrainers />} />
+          <Route path="/trust-safety" element={<TrustSafety />} />
           {/* 404 Fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,12 +1,13 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ChevronDown, Heart, Loader2, MapPin, Search, SlidersHorizontal, Star, UserRoundCheck, Video } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Heart, MapPin, MessageCircle, Search, ShieldCheck, SlidersHorizontal, Star, UserRoundCheck, Video } from 'lucide-react';
 import { api } from '../utils/api';
 import SEO from '../components/SEO';
-import EmptyState from '../components/EmptyState';
 import { SkeletonCard, SkeletonHero } from '../components/Skeleton';
 import { HeroBlock, InfoPill, PageContainer, PageShell, Surface } from '../components/premium';
-import { toggleFavorite, isFavorite } from '../utils/favorites';
+import { MotionCard, Reveal } from '../components/Motion';
+import { toggleFavorite } from '../utils/favorites';
 
 const cities = ['All', 'Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Gujranwala', 'Sialkot', 'Online'];
 const modes = ['All', 'Gym', 'Home Visit', 'Online', 'Studio'];
@@ -21,6 +22,8 @@ const sortOptions = [
 ];
 
 const toNumber = (value: number | string | undefined) => Number(String(value || 0).replace(/,/g, ''));
+const toSessionPrice = (trainer: any) => toNumber(trainer.sessionPrice ?? trainer.price);
+const toMonthlyEstimate = (trainer: any) => toNumber(trainer.monthlyPrice ?? trainer.monthlyPackagePrice) || Math.round(toSessionPrice(trainer) * 12);
 
 export default function Discover() {
   const [searchParams] = useSearchParams();
@@ -34,8 +37,21 @@ export default function Discover() {
   const [specialty, setSpecialty] = useState(searchParams.get('specialty') || 'All');
   const [maxPrice, setMaxPrice] = useState(Number(searchParams.get('maxPrice') || 30000));
   const [sort, setSort] = useState('recommended');
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [hasTransformations, setHasTransformations] = useState(false);
+  const [availableNow, setAvailableNow] = useState(false);
+  const [packagesApproved, setPackagesApproved] = useState(false);
   const [compare, setCompare] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [matchStatus, setMatchStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [matchForm, setMatchForm] = useState({
+    name: '',
+    phone: '',
+    city: searchParams.get('city') || 'Lahore',
+    goal: searchParams.get('specialty') || 'Fat loss',
+    budget: String(Number(searchParams.get('maxPrice') || 30000)),
+    message: ''
+  });
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -49,10 +65,20 @@ export default function Discover() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    api.trackEvent({
+      type: 'discover_search',
+      path: '/discover',
+      city,
+      goal: specialty,
+      metadata: { query: deferredQuery, mode, gender, maxPrice, sort }
+    }).catch(() => {});
+  }, [deferredQuery, city, mode, gender, specialty, maxPrice, sort]);
+
   const filtered = useMemo(() => {
     const ranked = trainers
       .filter((trainer) => {
-        const price = toNumber(trainer.price);
+        const monthlyPrice = toMonthlyEstimate(trainer);
         const search = `${trainer.name} ${trainer.specialty} ${trainer.city} ${trainer.area} ${trainer.goals?.join(' ')}`.toLowerCase();
         const matchesCity = city === 'All' || trainer.city === city || trainer.location === city || (city === 'Online' && trainer.serviceModes?.includes('Online'));
         const matchesSpecialty = specialty === 'All' || trainer.goals?.includes(specialty) || String(trainer.specialty || '').toLowerCase().includes(specialty.toLowerCase());
@@ -62,11 +88,16 @@ export default function Discover() {
           (mode === 'All' || trainer.serviceModes?.includes(mode)) &&
           (gender === 'All' || trainer.gender === gender) &&
           matchesSpecialty &&
-          price <= maxPrice
+          monthlyPrice <= maxPrice &&
+          (!verifiedOnly || trainer.verificationStatus === 'approved') &&
+          (!hasTransformations || trainer.transformationImages?.length > 0 || trainer.transformations?.length > 0) &&
+          (!availableNow || Number(trainer.capacity || 0) - Number(trainer.activeClients || 0) > 0) &&
+          (!packagesApproved || trainer.packagesStatus === 'approved')
         );
       })
       .map((trainer) => {
         const score =
+          (trainer.featuredStatus === 'approved' || trainer.featuredManual ? 1000 : 0) +
           Number(trainer.rating || 0) * 20 +
           Number(trainer.completedBookings || 0) +
           Number(trainer.profileCompleteness || 0) +
@@ -78,11 +109,11 @@ export default function Discover() {
     return ranked.sort((a, b) => {
       if (sort === 'rating') return Number(b.rating || 0) - Number(a.rating || 0);
       if (sort === 'completed') return Number(b.completedBookings || 0) - Number(a.completedBookings || 0);
-      if (sort === 'price_low') return toNumber(a.price) - toNumber(b.price);
+      if (sort === 'price_low') return toMonthlyEstimate(a) - toMonthlyEstimate(b);
       if (sort === 'response') return Number(a.responseTimeHours || 999) - Number(b.responseTimeHours || 999);
       return Number(b.trustScore || 0) - Number(a.trustScore || 0);
     });
-  }, [trainers, deferredQuery, city, mode, gender, specialty, maxPrice, sort]);
+  }, [trainers, deferredQuery, city, mode, gender, specialty, maxPrice, sort, verifiedOnly, hasTransformations, availableNow, packagesApproved]);
 
   const comparedTrainers = compare.map((id) => trainers.find((trainer) => trainer.id === id)).filter(Boolean);
   const budgetPercent = ((maxPrice - 1000) / (50000 - 1000)) * 100;
@@ -95,6 +126,10 @@ export default function Discover() {
     setSpecialty('All');
     setMaxPrice(30000);
     setSort('recommended');
+    setVerifiedOnly(false);
+    setHasTransformations(false);
+    setAvailableNow(false);
+    setPackagesApproved(false);
     setCompare([]);
   };
 
@@ -103,6 +138,27 @@ export default function Discover() {
       if (current.includes(id)) return current.filter((item) => item !== id);
       return current.length >= 3 ? current : [...current, id];
     });
+  };
+
+  const submitMatchRequest = async (event: FormEvent) => {
+    event.preventDefault();
+    setMatchStatus('loading');
+    try {
+      await api.createMatchRequest({
+        clientName: matchForm.name,
+        clientPhone: matchForm.phone,
+        city: matchForm.city,
+        goal: matchForm.goal,
+        budget: `PKR ${Number(matchForm.budget || 0).toLocaleString()}/mo`,
+        mode,
+        genderPreference: gender,
+        message: matchForm.message,
+        source: 'discover_empty_state'
+      });
+      setMatchStatus('success');
+    } catch {
+      setMatchStatus('idle');
+    }
   };
 
   if (loading) {
@@ -130,7 +186,7 @@ export default function Discover() {
         <SEO
           title="Find Personal Trainers in Pakistan | Liftrz Discover"
           description="Search verified personal trainers in Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Gujranwala and Sialkot by specialty, price, rating, gender, response time and training mode."
-          canonical="https://liftrz.vercel.app/discover"
+          canonical="https://liftrz.com/discover"
           jsonLd={{
             '@context': 'https://schema.org',
             '@type': 'ItemList',
@@ -139,7 +195,7 @@ export default function Discover() {
               '@type': 'ListItem',
               position: index + 1,
               name: trainer.name,
-              url: `https://liftrz.vercel.app/trainer/${trainer.id}`
+              url: `https://liftrz.com/trainer/${trainer.slug || trainer.id}`
             }))
           }}
         />
@@ -167,7 +223,8 @@ export default function Discover() {
           ))}
         </div>
 
-        <Surface className="mt-6 p-4 md:p-5">
+        <Reveal className="mt-6">
+        <Surface className="p-4 md:p-5">
           <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
             <div className="flex items-center gap-3 rounded-xl border border-slate-700/50 bg-surface-high/50 px-4 py-3">
               <Search className="h-5 w-5 text-primary" />
@@ -190,7 +247,14 @@ export default function Discover() {
               </div>
             </label>
           </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <ToggleFilter label="Verified only" active={verifiedOnly} onClick={() => setVerifiedOnly((value) => !value)} />
+            <ToggleFilter label="Has transformations" active={hasTransformations} onClick={() => setHasTransformations((value) => !value)} />
+            <ToggleFilter label="Available now" active={availableNow} onClick={() => setAvailableNow((value) => !value)} />
+            <ToggleFilter label="Packages approved" active={packagesApproved} onClick={() => setPackagesApproved((value) => !value)} />
+          </div>
         </Surface>
+        </Reveal>
 
         {comparedTrainers.length > 0 && (
           <div className="mt-6 rounded-2xl border border-primary/30 bg-primary/10 p-5">
@@ -202,9 +266,9 @@ export default function Discover() {
               {comparedTrainers.map((trainer: any) => (
                 <div key={trainer.id} className="rounded-xl bg-surface p-4">
                   <h3 className="font-semibold text-white">{trainer.name}</h3>
-                  <p className="mt-1 text-xs text-slate-400">{trainer.city} · {trainer.specialty}</p>
+                  <p className="mt-1 text-xs text-slate-400">{trainer.city} - {trainer.specialty}</p>
                   <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-slate-300">
-                    <span>PKR {trainer.price}</span>
+                    <span>~PKR {toMonthlyEstimate(trainer).toLocaleString()}/mo</span>
                     <span>{trainer.rating ? `${trainer.rating} rating` : 'No reviews'}</span>
                     <span>{trainer.completedBookings ? `${trainer.completedBookings} done` : 'New trainer'}</span>
                   </div>
@@ -225,9 +289,13 @@ export default function Discover() {
             const compareDisabled = compare.length >= 3 && !selected;
             const hasVideo = trainer.videoUrl;
             const isAvailable = availableSlots > 0;
+            const sessionPrice = toSessionPrice(trainer);
+            const monthlyEstimate = toMonthlyEstimate(trainer);
 
             return (
-              <article key={trainer.id} className="group overflow-hidden rounded-2xl border border-slate-700/50 bg-surface transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
+              <div key={trainer.id}>
+              <MotionCard>
+              <article className="group overflow-hidden rounded-2xl border border-slate-700/50 bg-surface transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
                 <div
                   className="relative aspect-square overflow-hidden bg-surface-high bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
                   style={{ backgroundImage: trainer.image ? `url(${trainer.image})` : undefined }}
@@ -240,11 +308,16 @@ export default function Discover() {
                   )}
                   <div className="absolute left-3 top-3 flex items-center gap-2">
                     <span className="rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
-                      {trainer.gender === 'Female' ? '♀ Female' : '♂ Male'}
+                      {trainer.gender === 'Female' ? 'Female' : 'Male'}
                     </span>
                     {hasVideo && (
                       <span className="flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
                         <Video className="h-3 w-3" /> Video
+                      </span>
+                    )}
+                    {(trainer.featuredStatus === 'approved' || trainer.featuredManual) && (
+                      <span className="rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+                        Featured
                       </span>
                     )}
                   </div>
@@ -279,8 +352,9 @@ export default function Discover() {
                       <p className="mt-0.5 text-sm text-slate-400">{trainer.specialty}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-primary">PKR {Math.round(toNumber(trainer.price) * 12).toLocaleString()}</p>
-                      <p className="text-xs text-slate-500">per month</p>
+                      <p className="text-lg font-bold text-primary">PKR {sessionPrice.toLocaleString()}</p>
+                      <p className="text-xs text-slate-500">per session</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">~PKR {monthlyEstimate.toLocaleString()}/mo</p>
                     </div>
                   </div>
 
@@ -298,24 +372,30 @@ export default function Discover() {
                   <div className="mt-3 flex items-center gap-1 text-xs text-slate-500">
                     <MapPin className="h-3.5 w-3.5" />
                     {trainer.area ? `${trainer.area}, ${trainer.city}` : trainer.city}
-                    <span className="mx-1">·</span>
+                    <span className="mx-1">-</span>
                     {trainer.serviceModes?.join(', ')}
                   </div>
 
                   <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-400">{trainer.bio}</p>
 
-                  <Link to={`/trainer/${trainer.id}`} className="mt-5 flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-dark">
+                  <Link
+                    to={`/trainer/${trainer.slug || trainer.id}`}
+                    onClick={() => api.trackEvent({ type: 'profile_click', trainerId: trainer.id, source: 'discover_card', city: trainer.city, goal: trainer.specialty }).catch(() => {})}
+                    className="mt-5 flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-dark"
+                  >
                     View Profile
                   </Link>
                 </div>
               </article>
+              </MotionCard>
+              </div>
             );
           })}
         </section>
 
         {filtered.length === 0 && trainers.length === 0 && (
           <div className="mt-8">
-            <EmptyState title="No trainers yet" description="We are onboarding verified trainers in your city. Check back soon or be the first to apply." />
+            <ManualMatchBox form={matchForm} status={matchStatus} onChange={setMatchForm} onSubmit={submitMatchRequest} />
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link to="/register/trainer" className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark">
                 Apply as trainer
@@ -329,10 +409,12 @@ export default function Discover() {
 
         {filtered.length === 0 && trainers.length > 0 && (
           <div className="mt-8">
-            <EmptyState title="No exact matches" description="We couldn't find trainers with those exact filters. Here are some nearby alternatives." />
+            <ManualMatchBox form={matchForm} status={matchStatus} onChange={setMatchForm} onSubmit={submitMatchRequest} title="No exact matches" description="Share your city, goal and WhatsApp. Liftrz can manually match you with nearby or online trainers." />
             <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {trainers.slice(0, 3).map((trainer) => (
-                <article key={trainer.id} className="group overflow-hidden rounded-2xl border border-slate-700/50 bg-surface transition-all hover:border-primary/30">
+                <div key={trainer.id}>
+                <MotionCard>
+                <article className="group overflow-hidden rounded-2xl border border-slate-700/50 bg-surface transition-all hover:border-primary/30">
                   <div
                     className="relative aspect-square overflow-hidden bg-surface-high bg-cover bg-center"
                     style={{ backgroundImage: trainer.image ? `url(${trainer.image})` : undefined }}
@@ -348,10 +430,12 @@ export default function Discover() {
                   </div>
                   <div className="p-5">
                     <h2 className="text-xl font-bold text-white">{trainer.name}</h2>
-                    <p className="mt-0.5 text-sm text-slate-400">{trainer.specialty} · {trainer.city}</p>
+                    <p className="mt-0.5 text-sm text-slate-400">{trainer.specialty} - {trainer.city}</p>
                     <Link to={`/trainer/${trainer.id}`} className="mt-4 flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white hover:bg-primary-dark">View Profile</Link>
                   </div>
                 </article>
+                </MotionCard>
+                </div>
               ))}
             </div>
             <div className="mt-6 text-center">
@@ -375,5 +459,73 @@ function FilterSelect({ label, value, onChange, options, labels = {} }: { label:
       </select>
       <ChevronDown className="pointer-events-none absolute right-4 top-1/2 mt-1 h-4 w-4 text-slate-500" />
     </label>
+  );
+}
+
+function ToggleFilter({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className={`rounded-full px-4 py-2 text-xs font-semibold ${active ? 'bg-primary text-white' : 'border border-slate-700/50 bg-surface-high/50 text-slate-300 hover:bg-surface-high'}`}>
+      {label}
+    </button>
+  );
+}
+
+function ManualMatchBox({
+  form,
+  status,
+  onChange,
+  onSubmit,
+  title = 'No trainers yet',
+  description = 'Tell us what you need. We will match you manually while verified trainers are being onboarded.'
+}: {
+  form: { name: string; phone: string; city: string; goal: string; budget: string; message: string };
+  status: 'idle' | 'loading' | 'success';
+  onChange: (form: { name: string; phone: string; city: string; goal: string; budget: string; message: string }) => void;
+  onSubmit: (event: FormEvent) => void;
+  title?: string;
+  description?: string;
+}) {
+  if (status === 'success') {
+    return (
+      <Surface className="p-8 text-center">
+        <CheckCircle2 className="mx-auto h-12 w-12 text-success" />
+        <h2 className="mt-4 text-2xl font-bold text-white">Match request received</h2>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-400">Liftrz has your city, goal and WhatsApp. We will use this to shortlist nearby or online trainers.</p>
+      </Surface>
+    );
+  }
+
+  return (
+    <Surface className="p-6 md:p-8">
+      <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+        <div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+            <MessageCircle className="h-6 w-6 text-primary" />
+          </div>
+          <h2 className="mt-4 text-2xl font-bold text-white">{title}</h2>
+          <p className="mt-2 text-sm leading-7 text-slate-400">{description}</p>
+          <div className="mt-5 grid gap-2 text-sm text-slate-400">
+            <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Verified trainers only</span>
+            <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> City, budget and goal matched</span>
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-2">
+          <input required value={form.name} onChange={(e) => onChange({ ...form, name: e.target.value })} placeholder="Your name" className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600" />
+          <input required value={form.phone} onChange={(e) => onChange({ ...form, phone: e.target.value })} placeholder="WhatsApp number" className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600" />
+          <select value={form.city} onChange={(e) => onChange({ ...form, city: e.target.value })} className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none">
+            {cities.filter((item) => item !== 'All').map((item) => <option key={item}>{item}</option>)}
+          </select>
+          <select value={form.goal} onChange={(e) => onChange({ ...form, goal: e.target.value })} className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none">
+            {specialties.filter((item) => item !== 'All').map((item) => <option key={item}>{item}</option>)}
+          </select>
+          <input required value={form.budget} onChange={(e) => onChange({ ...form, budget: e.target.value })} placeholder="Monthly budget PKR" className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 md:col-span-2" />
+          <textarea value={form.message} onChange={(e) => onChange({ ...form, message: e.target.value })} rows={3} placeholder="Any preference? Female trainer, home visit, evening schedule..." className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 md:col-span-2" />
+          <button disabled={status === 'loading'} className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark disabled:opacity-60 md:col-span-2">
+            {status === 'loading' ? 'Sending...' : 'Get manually matched'}
+          </button>
+        </form>
+      </div>
+    </Surface>
   );
 }

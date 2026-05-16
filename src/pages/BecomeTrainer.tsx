@@ -10,7 +10,7 @@ export default function BecomeTrainer() {
         <SEO
           title="Become a Personal Trainer on Liftrz Pakistan"
           description="Register as a verified personal trainer in Pakistan. Submit CNIC, certifications, packages, pricing and payout details for Liftrz approval."
-          canonical="https://liftrz.vercel.app/become-trainer"
+          canonical="https://liftrz.com/become-trainer"
         />
 
         <HeroBlock

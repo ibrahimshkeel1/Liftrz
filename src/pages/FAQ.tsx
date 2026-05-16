@@ -48,7 +48,7 @@ export default function FAQ() {
         <SEO
           title="FAQ | Liftrz Pakistan"
           description="Frequently asked questions about finding personal trainers in Pakistan, pricing, verification, payments, and more."
-          canonical="https://liftrz.vercel.app/faq"
+          canonical="https://liftrz.com/faq"
         />
 
         <HeroBlock

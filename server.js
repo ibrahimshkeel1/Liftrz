@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
@@ -14,6 +15,28 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3010;
 const isServerless = Boolean(process.env.VERCEL);
+const canonicalHost = (process.env.CANONICAL_HOST || 'liftrz.com').toLowerCase();
+const productionHosts = new Set([canonicalHost, `www.${canonicalHost}`]);
+app.set('trust proxy', 1);
+
+app.use((req, res, next) => {
+  const host = String(req.headers.host || '').split(':')[0].toLowerCase();
+  if (host === `www.${canonicalHost}`) {
+    return res.redirect(301, `https://${canonicalHost}${req.originalUrl}`);
+  }
+  return next();
+});
+
+app.use((req, res, next) => {
+  const host = String(req.headers.host || '').split(':')[0].toLowerCase();
+  if (productionHosts.has(host)) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 const normalizeSupabaseUrl = (value = '') => {
   const cleaned = String(value).trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/g, '');
   const projectRoot = cleaned.match(/^(https?:\/\/[^/]+\.supabase\.co)(?:\/.*)?$/i);
@@ -280,6 +303,18 @@ const canAccessBooking = (user, booking) => (
   || (user?.role === 'trainer' && user.trainerId === booking?.trainerId)
   || (user?.role === 'client' && user.id === booking?.clientId)
 );
+const isFeaturedTrainer = (trainer) => {
+  const stillActive = !trainer.featuredUntil || new Date(trainer.featuredUntil).getTime() >= Date.now();
+  const paidApproved = trainer.featuredStatus === 'approved' && trainer.featuredPaymentStatus === 'verified';
+  return stillActive && (trainer.featuredManual === true || paidApproved);
+};
+
+const withReview = (item, status = 'pending_review', note = '') => ({
+  ...(item || {}),
+  status,
+  reviewNote: note,
+  reviewedAt: new Date().toISOString()
+});
 
 const canChatBooking = (booking) => (
   booking?.paymentStatus === 'verified'
@@ -328,10 +363,41 @@ const bookingChatSummary = (booking, db) => {
 
 const publicTrainer = (trainer, db) => {
   if (!trainer) return null;
-  const { contactPhone, whatsapp, payoutAccount, rating: _fakeRating, reviews: _fakeReviews, completedBookings: _fakeCompleted, successRate: _fakeSuccess, avgFatLoss: _fakeFatLoss, clientRetention: _fakeRetention, totalRevenue: _fakeRevenue, ...safe } = trainer;
+  const {
+    contactPhone,
+    whatsapp,
+    payoutAccount,
+    bankName,
+    bankAccountNumber,
+    accountTitle,
+    cnicNumber,
+    cnicFrontImage,
+    cnicBackImage,
+    certificationDocs,
+    rating: _fakeRating,
+    reviews: _fakeReviews,
+    completedBookings: _fakeCompleted,
+    successRate: _fakeSuccess,
+    avgFatLoss: _fakeFatLoss,
+    clientRetention: _fakeRetention,
+    totalRevenue: _fakeRevenue,
+    ...safe
+  } = trainer;
   const stats = db ? trainerStats(db, trainer.id) : {};
   return {
     ...safe,
+    certifications: Array.isArray(trainer.certifications)
+      ? trainer.certifications.filter((item) => typeof item === 'string')
+      : [],
+    transformations: Array.isArray(trainer.transformations)
+      ? trainer.transformations.filter((item) => item.status === 'approved' || !item.status)
+      : [],
+    profileGallery: Array.isArray(trainer.profileGallery)
+      ? trainer.profileGallery.filter((item) => item.status === 'approved' || !item.status).slice(0, 5)
+      : [],
+    transformationImages: Array.isArray(trainer.transformationImages)
+      ? trainer.transformationImages.filter((item) => item.status === 'approved' || !item.status).slice(0, 10)
+      : [],
     rating: stats.averageRating || 0,
     reviews: stats.reviewCount || 0,
     completedBookings: stats.completedClients || 0,
@@ -390,6 +456,7 @@ const marketplaceStats = (db) => {
     pendingTrainerApprovals: db.trainers.filter((trainer) => trainer.verificationStatus === 'pending').length,
     activeBookings: db.bookings.filter((booking) => booking.status === 'active').length,
     pendingPaymentVerifications: db.payments.filter((payment) => payment.status === 'pending_verification').length,
+    pendingFeaturedApprovals: db.trainers.filter((trainer) => trainer.featuredStatus === 'requested').length,
     openDisputes: db.disputes.filter((dispute) => dispute.status === 'open').length
   };
 };
@@ -397,6 +464,34 @@ const marketplaceStats = (db) => {
 app.get('/api/settings', route(async (_req, res) => {
   const db = await readDB();
   res.json(db.platformSettings);
+}));
+
+app.post('/api/contact', validateBody({
+  name: { required: true, maxLength: 120 },
+  email: { required: true, maxLength: 200, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+  subject: { required: true, maxLength: 160 },
+  message: { required: true, maxLength: 2000 }
+}), route(async (req, res) => {
+  const db = await readDB();
+  db.contactMessages = db.contactMessages || [];
+  const contactMessage = {
+    id: makeId('contact'),
+    name: sanitizeString(req.body.name, 120),
+    email: sanitizeString(req.body.email, 200),
+    subject: sanitizeString(req.body.subject, 160),
+    message: sanitizeString(req.body.message, 2000),
+    status: 'new',
+    createdAt: new Date().toISOString()
+  };
+  db.contactMessages.push(contactMessage);
+  await writeDB(db);
+  void email.contactMessage({
+    name: contactMessage.name,
+    fromEmail: contactMessage.email,
+    subject: contactMessage.subject,
+    message: contactMessage.message
+  });
+  res.status(201).json(contactMessage);
 }));
 
 app.post('/api/auth/register', authRateLimiter, validateBody({
@@ -540,18 +635,36 @@ app.get('/api/trainers', route(async (req, res) => {
     .filter((trainer) => includePending || (trainer.verificationStatus === 'approved' && trainer.profileStatus === 'live'))
     .map((trainer) => ({ trainer, stats: trainerStats(db, trainer.id) }))
     .sort((a, b) => {
-      const scoreA = Number(a.stats.completedClients || 0) * 2 + Number(a.stats.averageRating || 0) * 10 + Number(a.trainer.profileCompleteness || 0);
-      const scoreB = Number(b.stats.completedClients || 0) * 2 + Number(b.stats.averageRating || 0) * 10 + Number(b.trainer.profileCompleteness || 0);
+      const scoreA = (isFeaturedTrainer(a.trainer) ? 1000 : 0) + Number(a.stats.completedClients || 0) * 2 + Number(a.stats.averageRating || 0) * 10 + Number(a.trainer.profileCompleteness || 0);
+      const scoreB = (isFeaturedTrainer(b.trainer) ? 1000 : 0) + Number(b.stats.completedClients || 0) * 2 + Number(b.stats.averageRating || 0) * 10 + Number(b.trainer.profileCompleteness || 0);
       return scoreB - scoreA;
     })
     .map(({ trainer }) => publicTrainer(trainer, db));
   res.json(trainers);
 }));
 
+app.get('/api/featured-trainers', route(async (_req, res) => {
+  const db = await readDB();
+  const trainers = db.trainers
+    .filter((trainer) => trainer.verificationStatus === 'approved' && trainer.profileStatus === 'live')
+    .filter(isFeaturedTrainer)
+    .sort((a, b) => new Date(b.featuredApprovedAt || b.updatedAt || 0).getTime() - new Date(a.featuredApprovedAt || a.updatedAt || 0).getTime())
+    .slice(0, 6)
+    .map((trainer) => publicTrainer(trainer, db));
+  res.json(trainers);
+}));
+
 app.get('/api/trainers/:id', route(async (req, res) => {
   const db = await readDB();
-  const trainer = db.trainers.find((item) => item.id === req.params.id);
+  const lookupId = req.params.id;
+  const trainer = db.trainers.find((item) => item.id === lookupId || item.slug === lookupId);
   if (!trainer) return res.status(404).json({ message: 'Trainer not found' });
+  if (canAccessTrainer(req.currentUser, trainer.id)) {
+    return res.json({
+      ...trainer,
+      ...trainerStats(db, trainer.id)
+    });
+  }
   res.json(publicTrainer(trainer, db));
 }));
 
@@ -562,6 +675,19 @@ app.post('/api/trainers', route(async (req, res) => {
   if (emailTaken) return res.status(409).json({ message: 'Email already registered' });
 
   const trainerId = req.body.id || makeId('trainer');
+  const trainerSlug = (req.body.name || 'trainer')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    + '-' + (req.body.city || req.body.location || 'pakistan')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/[\s]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
   const user = {
     id: req.body.userId || makeId('trainer-user'),
     role: 'trainer',
@@ -577,6 +703,7 @@ app.post('/api/trainers', route(async (req, res) => {
 
   const newTrainer = {
     id: trainerId,
+    slug: trainerSlug,
     userId: user.id,
     name: req.body.name,
     email,
@@ -598,10 +725,40 @@ app.post('/api/trainers', route(async (req, res) => {
     verificationStatus: 'pending',
     profileStatus: 'pending_review',
     verificationLevel: 'Pending admin approval',
+    identityStatus: 'not_submitted',
+    profileAssetsStatus: 'not_submitted',
+    payoutStatus: 'not_submitted',
+    certificationsStatus: 'not_submitted',
+    packagesStatus: 'not_submitted',
+    identitySubmittedAt: '',
+    profileAssetsSubmittedAt: '',
+    payoutSubmittedAt: '',
+    certificationsSubmittedAt: '',
     payoutMethod: req.body.payoutMethod || 'Bank Transfer',
     payoutAccount: req.body.payoutAccount || '',
+    bankName: '',
+    bankAccountNumber: '',
+    accountTitle: '',
+    cnicNumber: '',
+    cnicFrontImage: '',
+    cnicBackImage: '',
+    certificationDocs: [],
     commissionRate: db.platformSettings.commissionRate,
+    featuredStatus: 'none',
+    featuredPaymentStatus: 'not_required',
+    featuredManual: false,
+    featuredPlacement: 'home',
+    featuredNote: '',
+    featuredRequestedAt: '',
+    featuredApprovedAt: '',
+    featuredRejectedAt: '',
+    featuredUntil: '',
+    featuredReceiptImage: '',
     capacity: Number(req.body.capacity || 0),
+    availableDays: [],
+    availableTimeSlots: '',
+    homeVisitAreas: '',
+    availabilityNote: '',
     activeClients: 0,
     completedBookings: 0,
     profileCompleteness: 70,
@@ -609,6 +766,8 @@ app.post('/api/trainers', route(async (req, res) => {
     totalRevenue: 0,
     pendingPayout: 0,
     image: req.body.image || '',
+    profileGallery: [],
+    transformationImages: [],
     successRate: 'New',
     activeProtocols: 0,
     avgFatLoss: 'N/A',
@@ -638,6 +797,83 @@ app.get('/api/trainers/:id/leads', requireAuth, route(async (req, res) => {
   }
   const db = await readDB();
   res.json(db.leads.filter((lead) => lead.trainerId === req.params.id));
+}));
+
+app.patch('/api/trainers/:id/profile', requireAuth, route(async (req, res) => {
+  if (!canAccessTrainer(req.currentUser, req.params.id)) {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+  const db = await readDB();
+  const index = db.trainers.findIndex((trainer) => trainer.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Trainer not found' });
+
+  const now = new Date().toISOString();
+  const allowed = new Set([
+    'name', 'phone', 'contactPhone', 'whatsapp', 'email', 'city', 'location', 'area', 'gender',
+    'languages', 'specialty', 'goals', 'serviceModes', 'bio', 'price', 'capacity', 'image',
+    'availableDays', 'availableTimeSlots', 'homeVisitAreas', 'availabilityNote',
+    'cnicNumber', 'cnicFrontImage', 'cnicBackImage',
+    'bankName', 'bankAccountNumber', 'accountTitle', 'payoutMethod', 'payoutAccount',
+    'certifications', 'certificationDocs', 'transformations', 'profileGallery', 'transformationImages'
+  ]);
+  const patch = {};
+  Object.entries(req.body || {}).forEach(([key, value]) => {
+    if (allowed.has(key)) patch[key] = value;
+  });
+
+  const statusPatch = {};
+  if ('cnicNumber' in patch || 'cnicFrontImage' in patch || 'cnicBackImage' in patch) {
+    statusPatch.identityStatus = 'pending_review';
+    statusPatch.identitySubmittedAt = now;
+  }
+  if ('image' in patch || 'bio' in patch || 'profileGallery' in patch || 'transformationImages' in patch || 'transformations' in patch) {
+    statusPatch.profileAssetsStatus = 'pending_review';
+    statusPatch.profileAssetsSubmittedAt = now;
+  }
+  if ('bankName' in patch || 'bankAccountNumber' in patch || 'accountTitle' in patch || 'payoutMethod' in patch || 'payoutAccount' in patch) {
+    statusPatch.payoutStatus = 'pending_review';
+    statusPatch.payoutSubmittedAt = now;
+  }
+  if ('certifications' in patch || 'certificationDocs' in patch) {
+    statusPatch.certificationsStatus = 'pending_review';
+    statusPatch.certificationsSubmittedAt = now;
+  }
+
+  db.trainers[index] = {
+    ...db.trainers[index],
+    ...patch,
+    ...statusPatch,
+    updatedAt: now
+  };
+  await writeDB(db);
+  res.json(db.trainers[index]);
+}));
+
+app.post('/api/trainers/:id/featured-request', requireAuth, route(async (req, res) => {
+  if (!canAccessTrainer(req.currentUser, req.params.id)) {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+  const db = await readDB();
+  const index = db.trainers.findIndex((trainer) => trainer.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Trainer not found' });
+  if (db.trainers[index].verificationStatus !== 'approved' || db.trainers[index].profileStatus !== 'live') {
+    return res.status(400).json({ message: 'Your profile must be approved before requesting a featured placement.' });
+  }
+
+  const placement = ['home', 'discover', 'all'].includes(req.body.featuredPlacement) ? req.body.featuredPlacement : 'home';
+  db.trainers[index] = {
+    ...db.trainers[index],
+    featuredStatus: 'requested',
+    featuredPaymentStatus: 'pending',
+    featuredManual: false,
+    featuredPlacement: placement,
+    featuredNote: sanitizeString(req.body.featuredNote, 500),
+    featuredReceiptImage: sanitizeString(req.body.featuredReceiptImage, 2000),
+    featuredRequestedAt: new Date().toISOString(),
+    featuredRejectedAt: ''
+  };
+  await writeDB(db);
+  res.json(db.trainers[index]);
 }));
 
 app.get('/api/leads', requireRole('admin'), route(async (_req, res) => {
@@ -675,6 +911,60 @@ app.post('/api/leads', route(async (req, res) => {
   }
 
   res.status(201).json(newLead);
+}));
+
+app.post('/api/match-requests', route(async (req, res) => {
+  const db = await readDB();
+  const createdAt = new Date().toISOString();
+  const matchRequest = {
+    id: makeId('match'),
+    type: 'manual_match',
+    status: 'new',
+    trainerId: 'manual-match',
+    contactUnlocked: false,
+    createdAt,
+    clientId: req.currentUser?.role === 'client' ? req.currentUser.id : req.body.clientId,
+    clientName: req.currentUser?.role === 'client' ? req.currentUser.name : sanitizeString(req.body.clientName, 120),
+    clientEmail: req.currentUser?.role === 'client' ? req.currentUser.email : sanitizeString(req.body.clientEmail, 160),
+    clientPhone: req.currentUser?.role === 'client' ? req.currentUser.phone : sanitizeString(req.body.clientPhone, 40),
+    city: sanitizeString(req.body.city, 80),
+    goal: sanitizeString(req.body.goal, 120),
+    budget: sanitizeString(req.body.budget, 80),
+    mode: sanitizeString(req.body.mode, 80),
+    genderPreference: sanitizeString(req.body.genderPreference, 80),
+    message: sanitizeString(req.body.message, 800),
+    source: sanitizeString(req.body.source, 80) || 'manual_match'
+  };
+
+  db.leads.push(matchRequest);
+  db.statsEvents.push({
+    id: makeId('event'),
+    type: 'manual_match_request',
+    city: matchRequest.city,
+    goal: matchRequest.goal,
+    source: matchRequest.source,
+    createdAt
+  });
+  await writeDB(db);
+  res.status(201).json(matchRequest);
+}));
+
+app.post('/api/events', route(async (req, res) => {
+  const db = await readDB();
+  const event = {
+    id: makeId('event'),
+    type: sanitizeString(req.body.type, 80) || 'event',
+    trainerId: sanitizeString(req.body.trainerId, 120) || undefined,
+    city: sanitizeString(req.body.city, 80) || undefined,
+    goal: sanitizeString(req.body.goal, 120) || undefined,
+    source: sanitizeString(req.body.source, 120) || undefined,
+    path: sanitizeString(req.body.path, 240) || undefined,
+    metadata: req.body.metadata && typeof req.body.metadata === 'object' ? req.body.metadata : undefined,
+    createdAt: new Date().toISOString()
+  };
+  db.statsEvents.push(event);
+  await writeDB(db);
+  res.status(201).json({ ok: true });
 }));
 
 app.put('/api/leads/:id', requireAuth, route(async (req, res) => {
@@ -749,7 +1039,8 @@ app.post('/api/reviews', requireAuth, route(async (req, res) => {
 
 app.get('/api/trainers/:id/protocols', route(async (req, res) => {
   const db = await readDB();
-  res.json(db.protocols.filter((protocol) => protocol.trainerId === req.params.id));
+  const canSeeDrafts = canAccessTrainer(req.currentUser, req.params.id);
+  res.json(db.protocols.filter((protocol) => protocol.trainerId === req.params.id && (canSeeDrafts || protocol.status === 'approved' || !protocol.status)));
 }));
 
 app.post('/api/protocols', requireAuth, route(async (req, res) => {
@@ -758,8 +1049,18 @@ app.post('/api/protocols', requireAuth, route(async (req, res) => {
     return res.status(403).json({ message: 'Access denied' });
   }
   const db = await readDB();
-  const protocol = { id: makeId('protocol'), trainerId, ...req.body };
+  const protocol = {
+    id: makeId('protocol'),
+    trainerId,
+    ...req.body,
+    status: 'pending_review',
+    submittedAt: new Date().toISOString()
+  };
   db.protocols.push(protocol);
+  const trainerIndex = db.trainers.findIndex((trainer) => trainer.id === trainerId);
+  if (trainerIndex !== -1) {
+    db.trainers[trainerIndex].packagesStatus = 'pending_review';
+  }
   await writeDB(db);
   res.status(201).json(protocol);
 }));
@@ -1038,6 +1339,61 @@ app.get('/api/admin/stats', requireRole('admin'), route(async (_req, res) => {
   res.json(marketplaceStats(db));
 }));
 
+app.get('/api/admin/notifications', requireRole('admin'), route(async (_req, res) => {
+  const db = await readDB();
+  const notifications = [
+    ...(db.contactMessages || []).filter((item) => item.status !== 'closed').map((item) => ({
+      id: item.id,
+      type: 'contact',
+      title: `Contact: ${item.subject}`,
+      detail: `${item.name} / ${item.email}`,
+      createdAt: item.createdAt,
+      href: '/admin'
+    })),
+    ...db.trainers.filter((trainer) => trainer.verificationStatus === 'pending').map((trainer) => ({
+      id: `trainer-${trainer.id}`,
+      type: 'trainer_signup',
+      title: 'New trainer signup',
+      detail: `${trainer.name} / ${trainer.city}`,
+      createdAt: trainer.createdAt,
+      href: '/admin'
+    })),
+    ...db.trainers.flatMap((trainer) => ['identityStatus', 'profileAssetsStatus', 'payoutStatus', 'certificationsStatus'].filter((key) => trainer[key] === 'pending_review').map((key) => ({
+      id: `${trainer.id}-${key}`,
+      type: 'trainer_review',
+      title: `${key.replace('Status', '')} pending`,
+      detail: trainer.name,
+      createdAt: trainer.updatedAt || trainer.createdAt,
+      href: '/admin'
+    }))),
+    ...db.protocols.filter((protocol) => protocol.status === 'pending_review').map((protocol) => ({
+      id: `protocol-${protocol.id}`,
+      type: 'package',
+      title: 'Package pending approval',
+      detail: protocol.title,
+      createdAt: protocol.submittedAt,
+      href: '/admin'
+    })),
+    ...db.payments.filter((payment) => payment.status === 'pending_verification').map((payment) => ({
+      id: `payment-${payment.id}`,
+      type: 'payment',
+      title: 'Payment pending verification',
+      detail: `PKR ${Number(payment.amount || 0).toLocaleString()}`,
+      createdAt: payment.createdAt,
+      href: '/admin'
+    })),
+    ...db.trainers.filter((trainer) => trainer.featuredStatus === 'requested').map((trainer) => ({
+      id: `featured-${trainer.id}`,
+      type: 'featured',
+      title: 'Featured request pending',
+      detail: trainer.name,
+      createdAt: trainer.featuredRequestedAt,
+      href: '/admin'
+    }))
+  ].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  res.json(notifications);
+}));
+
 app.get('/api/admin/trainers', requireRole('admin'), route(async (_req, res) => {
   const db = await readDB();
   res.json(db.trainers);
@@ -1088,6 +1444,154 @@ app.patch('/api/admin/trainers/:id/commission', requireRole('admin'), route(asyn
     return res.status(400).json({ message: 'Commission rate must be between 0 and 1 (e.g., 0.10 for 10%)' });
   }
   db.trainers[index] = { ...db.trainers[index], commissionRate: rate };
+  await writeDB(db);
+  res.json(db.trainers[index]);
+}));
+
+app.patch('/api/admin/trainers/:id/profile-review', requireRole('admin'), route(async (req, res) => {
+  const db = await readDB();
+  const index = db.trainers.findIndex((trainer) => trainer.id === req.params.id || trainer.userId === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Trainer not found' });
+  const allowedStatuses = ['not_submitted', 'pending_review', 'approved', 'rejected'];
+  const patch = {};
+  ['identityStatus', 'profileAssetsStatus', 'payoutStatus', 'certificationsStatus', 'packagesStatus'].forEach((key) => {
+    if (allowedStatuses.includes(req.body[key])) patch[key] = req.body[key];
+  });
+  const reviewNote = sanitizeString(req.body.reviewNote, 500);
+
+  if (req.body.profileAssetsStatus === 'approved') {
+    patch.profileGallery = (db.trainers[index].profileGallery || []).map((item) => withReview(item, item.status === 'rejected' ? 'rejected' : 'approved', item.reviewNote || ''));
+    patch.transformationImages = (db.trainers[index].transformationImages || []).map((item) => withReview(item, item.status === 'rejected' ? 'rejected' : 'approved', item.reviewNote || ''));
+  }
+  if (req.body.certificationsStatus === 'approved') {
+    patch.certificationDocs = (db.trainers[index].certificationDocs || []).map((item) => withReview(item, item.status === 'rejected' ? 'rejected' : 'approved', item.reviewNote || ''));
+  }
+
+  if (req.body.mediaType && Number.isInteger(Number(req.body.index))) {
+    const mediaType = ['profileGallery', 'transformationImages', 'certificationDocs'].includes(req.body.mediaType) ? req.body.mediaType : '';
+    const status = allowedStatuses.includes(req.body.status) ? req.body.status : '';
+    const itemIndex = Number(req.body.index);
+    if (!mediaType || !status) return res.status(400).json({ message: 'Invalid media review request' });
+    const items = Array.isArray(db.trainers[index][mediaType]) ? [...db.trainers[index][mediaType]] : [];
+    if (!items[itemIndex]) return res.status(404).json({ message: 'Media item not found' });
+    items[itemIndex] = withReview(items[itemIndex], status, reviewNote);
+    patch[mediaType] = items;
+
+    if (mediaType === 'profileGallery' || mediaType === 'transformationImages') {
+      patch.profileAssetsStatus = items.some((item) => item.status === 'pending_review') ? 'pending_review' : 'approved';
+    }
+    if (mediaType === 'certificationDocs') {
+      patch.certificationsStatus = items.some((item) => item.status === 'pending_review') ? 'pending_review' : status;
+    }
+  }
+
+  const allCoreApproved = ['identityStatus', 'profileAssetsStatus', 'payoutStatus', 'certificationsStatus', 'packagesStatus']
+    .every((key) => (patch[key] || db.trainers[index][key]) === 'approved');
+  db.trainers[index] = {
+    ...db.trainers[index],
+    ...patch,
+    verificationStatus: allCoreApproved ? 'approved' : db.trainers[index].verificationStatus,
+    profileStatus: allCoreApproved ? 'live' : db.trainers[index].profileStatus,
+    verificationLevel: allCoreApproved ? 'CNIC, profile, payout, packages and certifications verified' : db.trainers[index].verificationLevel,
+    reviewNote: reviewNote || db.trainers[index].reviewNote,
+    reviewMessages: req.body.reviewNote
+      ? [
+          ...(db.trainers[index].reviewMessages || []),
+          {
+            id: makeId('review-note'),
+            section: req.body.mediaType || Object.keys(patch).find((key) => key.endsWith('Status')) || 'profile',
+            status: req.body.status || Object.values(patch).find((value) => allowedStatuses.includes(value)) || '',
+            note: reviewNote,
+            createdAt: new Date().toISOString()
+          }
+        ]
+      : db.trainers[index].reviewMessages || [],
+    updatedAt: new Date().toISOString()
+  };
+  await writeDB(db);
+  res.json(db.trainers[index]);
+}));
+
+app.get('/api/admin/protocols', requireRole('admin'), route(async (_req, res) => {
+  const db = await readDB();
+  res.json(db.protocols.map((protocol) => ({
+    ...protocol,
+    trainer: db.trainers.find((trainer) => trainer.id === protocol.trainerId)
+  })));
+}));
+
+app.patch('/api/admin/protocols/:id', requireRole('admin'), route(async (req, res) => {
+  const db = await readDB();
+  const index = db.protocols.findIndex((protocol) => protocol.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Package not found' });
+  const status = ['pending_review', 'approved', 'rejected'].includes(req.body.status) ? req.body.status : db.protocols[index].status;
+  db.protocols[index] = {
+    ...db.protocols[index],
+    status,
+    reviewNote: sanitizeString(req.body.reviewNote ?? db.protocols[index].reviewNote, 500),
+    reviewedAt: new Date().toISOString()
+  };
+  const trainerProtocols = db.protocols.filter((protocol) => protocol.trainerId === db.protocols[index].trainerId);
+  const trainerIndex = db.trainers.findIndex((trainer) => trainer.id === db.protocols[index].trainerId);
+  if (trainerIndex !== -1) {
+    db.trainers[trainerIndex].packagesStatus = trainerProtocols.some((protocol) => protocol.status === 'approved') ? 'approved' : 'pending_review';
+    if (req.body.reviewNote) {
+      db.trainers[trainerIndex].reviewMessages = [
+        ...(db.trainers[trainerIndex].reviewMessages || []),
+        {
+          id: makeId('review-note'),
+          section: 'package',
+          status,
+          note: sanitizeString(req.body.reviewNote, 500),
+          createdAt: new Date().toISOString()
+        }
+      ];
+    }
+  }
+  await writeDB(db);
+  res.json(db.protocols[index]);
+}));
+
+app.patch('/api/admin/trainers/:id/featured', requireRole('admin'), route(async (req, res) => {
+  const db = await readDB();
+  const index = db.trainers.findIndex((trainer) => trainer.id === req.params.id || trainer.userId === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Trainer not found' });
+
+  const now = new Date().toISOString();
+  const featuredStatus = ['none', 'requested', 'approved', 'rejected'].includes(req.body.featuredStatus)
+    ? req.body.featuredStatus
+    : db.trainers[index].featuredStatus || 'none';
+  const featuredPaymentStatus = ['not_required', 'pending', 'verified', 'rejected'].includes(req.body.featuredPaymentStatus)
+    ? req.body.featuredPaymentStatus
+    : db.trainers[index].featuredPaymentStatus || 'not_required';
+  const featuredPlacement = ['home', 'discover', 'all'].includes(req.body.featuredPlacement)
+    ? req.body.featuredPlacement
+    : db.trainers[index].featuredPlacement || 'home';
+
+  db.trainers[index] = {
+    ...db.trainers[index],
+    featuredStatus,
+    featuredPaymentStatus,
+    featuredPlacement,
+    featuredManual: Boolean(req.body.featuredManual),
+    featuredUntil: sanitizeString(req.body.featuredUntil, 60),
+    featuredNote: sanitizeString(req.body.featuredNote ?? db.trainers[index].featuredNote, 500),
+    featuredApprovedAt: featuredStatus === 'approved' ? now : db.trainers[index].featuredApprovedAt || '',
+    featuredRejectedAt: featuredStatus === 'rejected' ? now : '',
+    updatedAt: now
+  };
+
+  if (featuredStatus === 'none') {
+    db.trainers[index] = {
+      ...db.trainers[index],
+      featuredPaymentStatus: 'not_required',
+      featuredManual: false,
+      featuredUntil: '',
+      featuredApprovedAt: '',
+      featuredRejectedAt: ''
+    };
+  }
+
   await writeDB(db);
   res.json(db.trainers[index]);
 }));
@@ -1315,6 +1819,328 @@ app.get('/api/uploads/:bucket/*', route(async (req, res) => {
   res.setHeader('Content-Type', contentType);
   res.setHeader('Cache-Control', 'private, no-store');
   res.send(buffer);
+}));
+
+// Dynamic sitemap with real trainer URLs
+app.get('/sitemap.xml', route(async (_req, res) => {
+  const db = await readDB();
+  const blogSlugs = [
+    'best-personal-trainer-lahore', 'personal-trainer-cost-pakistan', 'female-personal-trainer-pakistan',
+    'home-vs-gym-training', 'wedding-fitness-pakistan', 'online-fitness-coach',
+    'pakistani-diet-for-weight-loss', 'ramadan-fitness-guide', 'desi-protein-sources'
+  ];
+  const seoPages = [
+    'personal-trainer-lahore', 'personal-trainer-karachi', 'personal-trainer-islamabad',
+    'personal-trainer-rawalpindi', 'personal-trainer-faisalabad', 'personal-trainer-gujranwala',
+    'personal-trainer-sialkot', 'online-fitness-coach-pakistan', 'female-personal-trainer-lahore',
+    'home-personal-trainer-karachi', 'personal-trainer-dha-lahore', 'female-trainer-karachi',
+    'online-fat-loss-coach-pakistan', 'home-trainer-lahore'
+  ];
+  const staticPages = [
+    '', 'discover', 'blog', 'tools', 'transformations', 'compare', 'saved', 'faq',
+    'refer', 'how-it-works', 'for-trainers', 'trust-safety', 'about', 'contact',
+    'terms', 'privacy', 'refund-policy', 'onboarding', 'become-trainer', 'quiz',
+    'login', 'register', 'register/client', 'register/trainer'
+  ];
+
+  const urls = [];
+  for (const p of staticPages) {
+    urls.push(`  <url><loc>https://${canonicalHost}/${p}</loc><changefreq>weekly</changefreq><priority>${p === '' ? '1.0' : p === 'discover' ? '0.9' : '0.7'}</priority></url>`);
+  }
+  for (const p of seoPages) {
+    urls.push(`  <url><loc>https://${canonicalHost}/${p}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`);
+  }
+  for (const slug of blogSlugs) {
+    urls.push(`  <url><loc>https://${canonicalHost}/blog/${slug}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
+  }
+  for (const trainer of db.trainers) {
+    if (trainer.profileStatus === 'live') {
+      const trainerUrl = trainer.slug ? `trainer/${trainer.slug}` : `trainer/${trainer.id}`;
+      urls.push(`  <url><loc>https://${canonicalHost}/${trainerUrl}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
+    }
+  }
+
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`);
+}));
+
+const distDir = path.join(__dirname, 'dist');
+app.use(express.static(distDir));
+
+const htmlPath = path.join(distDir, 'index.html');
+let htmlTemplate = '';
+try {
+  htmlTemplate = fs.readFileSync(htmlPath, 'utf8');
+} catch (_) {
+  htmlTemplate = '<!doctype html><html lang="en-PK"><head><meta charset="UTF-8"><title>Liftrz Pakistan</title></head><body><div id="root"></div></body></html>';
+}
+
+const routeMeta = {
+  '/': {
+    title: 'Liftrz Pakistan | Find Verified Personal Trainers Near You',
+    description: 'Find and book verified personal trainers in Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Gujranwala and Sialkot. Compare prices, read real reviews, book a free trial.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Liftrz Pakistan',
+      url: 'https://liftrz.com/',
+      logo: 'https://liftrz.com/logo.svg',
+      email: 'hey@liftrz.com',
+      telephone: '03078977205',
+      areaServed: ['Pakistan', 'Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Gujranwala', 'Sialkot']
+    }
+  },
+  '/discover': {
+    title: 'Discover Verified Personal Trainers | Compare & Book | Liftrz Pakistan',
+    description: 'Search and compare verified personal trainers across Pakistan. Filter by city, gender, specialty, price, and training mode. Read reviews from real clients.'
+  },
+  '/become-trainer': {
+    title: 'Become a Trainer | Join Liftrz Pakistan & Grow Your Client Base',
+    description: 'Apply to become a verified personal trainer on Liftrz Pakistan. Reach new clients, manage bookings, and grow your fitness coaching business.'
+  },
+  '/login': {
+    title: 'Login | Liftrz Pakistan',
+    description: 'Login to your Liftrz Pakistan account as a client, trainer, or admin.'
+  },
+  '/register': {
+    title: 'Register | Liftrz Pakistan',
+    description: 'Create your free Liftrz Pakistan account. Sign up as a client looking for a trainer, or as a trainer to list your services.'
+  },
+  '/quiz': {
+    title: 'Find Your Trainer Quiz | Liftrz Pakistan',
+    description: 'Take a quick quiz to find the perfect personal trainer for your fitness goals, budget, and location in Pakistan.'
+  },
+  '/blog': {
+    title: 'Fitness Blog | Personal Training Tips for Pakistan | Liftrz',
+    description: 'Guides on finding trainers, pricing, home workouts, wedding fitness, and online coaching in Pakistan.'
+  },
+  '/tools': {
+    title: 'Free Fitness Calculators | BMI, Calories, Macros | Liftrz Pakistan',
+    description: 'Free fitness calculators: BMI, calorie needs, macro split, and more. Plan your fitness journey with data.'
+  },
+  '/transformations': {
+    title: 'Client Transformations | Before & After | Liftrz Pakistan',
+    description: 'Real client transformations from verified Liftrz trainers. Before and after photos with documented fitness journeys.'
+  },
+  '/compare': {
+    title: 'Compare Trainers Side-by-Side | Liftrz Pakistan',
+    description: 'Compare up to 3 verified personal trainers by rating, price, specialty, and service mode.'
+  },
+  '/saved': {
+    title: 'Saved Trainers | Your Shortlist | Liftrz Pakistan',
+    description: 'View and manage your saved personal trainers shortlist.'
+  },
+  '/faq': {
+    title: 'Frequently Asked Questions | Liftrz Pakistan',
+    description: 'Answers to common questions about booking personal trainers, payments, reviews, and how Liftrz works.'
+  },
+  '/refer': {
+    title: 'Refer a Friend | Earn Credits | Liftrz Pakistan',
+    description: 'Refer friends to Liftrz Pakistan and earn credits toward your next trainer session or package.'
+  },
+  '/how-it-works': {
+    title: 'How Liftrz Works | Commission-Protected Trainer Booking | Liftrz',
+    description: 'Learn how Liftrz connects clients with verified trainers, manages payments, and protects both parties.'
+  },
+  '/for-trainers': {
+    title: 'For Trainers | Grow Your Coaching Business | Liftrz Pakistan',
+    description: 'Information for personal trainers: how to join, get verified, list services, and earn through Liftrz Pakistan.'
+  },
+  '/trust-safety': {
+    title: 'Trust & Safety | Verified Trainers, Protected Payments | Liftrz',
+    description: 'How Liftrz keeps you safe: trainer identity verification, commission-protected bookings, and verified reviews.'
+  },
+  '/about': {
+    title: 'About Liftrz | Pakistan\'s Personal Trainer Marketplace',
+    description: 'Liftrz connects clients in Pakistan with verified personal trainers for gym, home, and online coaching.'
+  },
+  '/contact': {
+    title: 'Contact Us | Liftrz Pakistan',
+    description: 'Get in touch with the Liftrz Pakistan team. We\'re here to help with bookings, trainer inquiries, and support.'
+  },
+  '/terms': {
+    title: 'Terms of Service | Liftrz Pakistan',
+    description: 'Read the terms of service for using the Liftrz Pakistan marketplace.'
+  },
+  '/privacy': {
+    title: 'Privacy Policy | Liftrz Pakistan',
+    description: 'How Liftrz Pakistan collects, uses, and protects your personal information.'
+  },
+  '/refund-policy': {
+    title: 'Refund Policy | Liftrz Pakistan',
+    description: 'Understand the refund and cancellation policy for bookings made through Liftrz Pakistan.'
+  },
+  '/onboarding': {
+    title: 'Client Onboarding | Get Started | Liftrz Pakistan',
+    description: 'Set up your fitness profile, choose your goals, and get matched with the right personal trainer.'
+  },
+  '/personal-trainer-lahore': {
+    title: 'Personal Trainer Lahore | Verified Fitness Coaches | Liftrz',
+    description: 'Find verified personal trainers in Lahore for gym, home and online coaching. Compare PKR pricing, reviews, completed bookings and trainer availability.'
+  },
+  '/personal-trainer-karachi': {
+    title: 'Personal Trainer Karachi | Home, Gym & Online Coaches | Liftrz',
+    description: 'Compare verified personal trainers in Karachi by area, rating, price, gender, response time and training mode.'
+  },
+  '/personal-trainer-islamabad': {
+    title: 'Personal Trainer Islamabad | Verified Coaches | Liftrz',
+    description: 'Book verified personal trainers in Islamabad for fat loss, strength, muscle gain, rehab and online coaching.'
+  },
+  '/personal-trainer-rawalpindi': {
+    title: 'Personal Trainer Rawalpindi | Verified Gym Trainers | Liftrz',
+    description: 'Search verified personal trainers in Rawalpindi and nearby Islamabad areas with transparent prices and booking records.'
+  },
+  '/personal-trainer-faisalabad': {
+    title: 'Personal Trainer Faisalabad | Verified Fitness Coaches | Liftrz',
+    description: 'Find verified personal trainers in Faisalabad for gym, home and online coaching. Compare PKR prices, reviews, training mode and availability.'
+  },
+  '/personal-trainer-gujranwala': {
+    title: 'Personal Trainer Gujranwala | Verified Gym Trainers | Liftrz',
+    description: 'Search verified personal trainers in Gujranwala for strength, fat loss, muscle gain and online coaching with transparent PKR pricing.'
+  },
+  '/personal-trainer-sialkot': {
+    title: 'Personal Trainer Sialkot | Verified Fitness Coaches | Liftrz',
+    description: 'Find verified personal trainers in Sialkot for gym, home visit and online coaching. Compare reviews, package prices and availability.'
+  },
+  '/online-fitness-coach-pakistan': {
+    title: 'Online Fitness Coach Pakistan | Verified Online Trainers | Liftrz',
+    description: 'Find online fitness coaches in Pakistan for fat loss, strength, muscle gain and habit-based coaching with verified reviews and payment tracking.'
+  },
+  '/female-personal-trainer-lahore': {
+    title: 'Female Personal Trainer Lahore | Verified Coaches | Liftrz',
+    description: 'Find female personal trainers in Lahore for gym, home and online coaching. Compare reviews, prices, service modes and availability.'
+  },
+  '/home-personal-trainer-karachi': {
+    title: 'Home Personal Trainer Karachi | Verified Home Visit Trainers | Liftrz',
+    description: 'Book home personal trainers in Karachi for strength, fat loss and general fitness. Compare verified trainers by area, rating and price.'
+  },
+  '/personal-trainer-dha-lahore': {
+    title: 'Personal Trainer DHA Lahore | Verified Fitness Coaches | Liftrz',
+    description: 'Find verified personal trainers serving DHA Lahore for gym, home visit and online coaching.'
+  },
+  '/female-trainer-karachi': {
+    title: 'Female Trainer Karachi | Verified Personal Trainers | Liftrz',
+    description: 'Search female personal trainers in Karachi for gym, home visit and online coaching.'
+  },
+  '/online-fat-loss-coach-pakistan': {
+    title: 'Online Fat Loss Coach Pakistan | Verified Trainers | Liftrz',
+    description: 'Find verified online fat loss coaches in Pakistan with reviewed packages and client transformations.'
+  },
+  '/home-trainer-lahore': {
+    title: 'Home Trainer Lahore | Verified Home Visit Coaches | Liftrz',
+    description: 'Book verified home trainers in Lahore for strength, fat loss, mobility and general fitness.'
+  },
+  '/register/client': {
+    title: 'Register as Client | Liftrz Pakistan',
+    description: 'Create your free client account on Liftrz Pakistan and find your perfect personal trainer.'
+  },
+  '/register/trainer': {
+    title: 'Register as Trainer | Liftrz Pakistan',
+    description: 'Apply to become a verified personal trainer on Liftrz Pakistan. Start receiving client inquiries.'
+  },
+  '/login/client': {
+    title: 'Client Login | Liftrz Pakistan',
+    description: 'Login to your client account on Liftrz Pakistan to manage bookings and chat with trainers.'
+  },
+  '/login/trainer': {
+    title: 'Trainer Login | Liftrz Pakistan',
+    description: 'Login to your trainer dashboard on Liftrz Pakistan to manage leads, bookings, and payouts.'
+  },
+  '/login/admin': {
+    title: 'Admin Login | Liftrz Pakistan',
+    description: 'Admin portal login for Liftrz Pakistan marketplace management.'
+  },
+  '/reset-password': {
+    title: 'Reset Password | Liftrz Pakistan',
+    description: 'Reset your Liftrz Pakistan account password.'
+  }
+};
+
+function injectMeta(html, meta, canonical) {
+  let result = html
+    .replace(/<title>[^<]*<\/title>/, `<title>${meta.title}</title>`)
+    .replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${meta.description}"`)
+    .replace(/<meta property="og:title" content="[^"]*"/, `<meta property="og:title" content="${meta.title}"`)
+    .replace(/<meta property="og:description" content="[^"]*"/, `<meta property="og:description" content="${meta.description}"`)
+    .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${canonical}"`)
+    .replace(/<meta name="twitter:title" content="[^"]*"/, `<meta name="twitter:title" content="${meta.title}"`)
+    .replace(/<meta name="twitter:description" content="[^"]*"/, `<meta name="twitter:description" content="${meta.description}"`)
+    .replace(/<link rel="canonical" href="[^"]*"/, `<link rel="canonical" href="${canonical}"`);
+
+  if (meta.jsonLd) {
+    result = result.replace(
+      /<script type="application\/ld\+json">[\s\S]*?<\/script>/g,
+      ''
+    );
+    result = result.replace(
+      '</head>',
+      `<script type="application/ld+json">${JSON.stringify(meta.jsonLd)}</script>\n</head>`
+    );
+  }
+
+  return result;
+}
+
+app.get('*', route(async (req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+
+  const canonical = `https://${canonicalHost}${req.path}`;
+  const meta = routeMeta[req.path];
+
+  if (meta) {
+    const html = injectMeta(htmlTemplate, meta, canonical);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  }
+
+  // Trainer profile pages: inject trainer-specific meta
+  const trainerMatch = req.path.match(/^\/trainer\/(.+)$/);
+  if (trainerMatch) {
+    try {
+      const db = await readDB();
+      const lookupId = trainerMatch[1];
+      const trainer = db.trainers.find(t => t.id === lookupId || t.slug === lookupId);
+      if (trainer) {
+        const trainerMeta = {
+          title: `${trainer.name} | ${trainer.specialty || 'Personal'} Trainer in ${trainer.city} | Liftrz`,
+          description: `Book ${trainer.name}, a verified ${trainer.specialty || 'personal trainer'} in ${trainer.city}, Pakistan. Compare packages, reviews and PKR pricing on Liftrz.`
+        };
+        const html = injectMeta(htmlTemplate, trainerMeta, canonical);
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.send(html);
+      }
+    } catch (_) { /* fallback to default template */ }
+  }
+
+  // Blog post pages: inject blog-specific meta
+  const blogMatch = req.path.match(/^\/blog\/(.+)$/);
+  if (blogMatch) {
+    const posts = {
+      'best-personal-trainer-lahore': { title: 'How to Find the Best Personal Trainer in Lahore', description: 'DHA, Gulberg, or Johar Town? We break down what to look for in a Lahore-based trainer and how much you should expect to pay.' },
+      'personal-trainer-cost-pakistan': { title: 'Personal Trainer Cost in Pakistan (2026)', description: 'From PKR 1,500 per session to PKR 50,000 monthly packages. Here is the complete pricing breakdown across Lahore, Karachi, and Islamabad.' },
+      'female-personal-trainer-pakistan': { title: 'Why More Women in Pakistan Are Hiring Female Personal Trainers', description: 'Privacy, comfort, and cultural preferences. We explore the growing demand for female trainers.' },
+      'home-vs-gym-training': { title: 'Home Training vs Gym Training: Which is Better?', description: 'No time for the gym? A trainer who comes to your home might be the answer. We compare costs, results, and convenience.' },
+      'wedding-fitness-pakistan': { title: 'Wedding Fitness: How to Get in Shape in 3 Months', description: 'The ultimate guide for brides and grooms in Pakistan. Nutrition, workouts, and realistic timelines for your big day.' },
+      'online-fitness-coach': { title: 'Do Online Fitness Coaches Actually Work?', description: 'Virtual training exploded post-COVID. We look at the pros, cons, and who online coaching is actually best for.' },
+      'pakistani-diet-for-weight-loss': { title: 'Pakistani Diet for Weight Loss: What Actually Works', description: 'Roti, biryani, and chai are not the enemy. We break down how to eat Pakistani food and still lose weight sustainably.' },
+      'ramadan-fitness-guide': { title: 'Ramadan Fitness Guide: Train Without Losing Muscle', description: 'How to structure your workouts, manage hydration, and maintain strength during Ramadan fasting in Pakistan.' },
+      'desi-protein-sources': { title: 'Cheap Protein Sources in Pakistan (Non-Meat Included)', description: 'Eggs, daal, chana, dahi, and paneer. Here is how to hit your protein goals on a Pakistani budget.' }
+    };
+    const post = posts[blogMatch[1]];
+    if (post) {
+      const blogMeta = {
+        title: `${post.title} | Liftrz Blog`,
+        description: post.description
+      };
+      const html = injectMeta(htmlTemplate, blogMeta, canonical);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.send(html);
+    }
+  }
+
+  res.sendFile(htmlPath);
 }));
 
 app.use((error, _req, res, _next) => {

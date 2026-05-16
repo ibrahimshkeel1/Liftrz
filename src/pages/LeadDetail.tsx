@@ -89,7 +89,7 @@ export default function LeadDetail() {
           <SEO
             title="Trainer Inbox | Liftrz Pakistan"
             description="Review new client leads, booking status, payment verification state and onboarding notes from the Liftrz trainer inbox."
-            canonical="https://liftrz.vercel.app/inbox"
+            canonical="https://liftrz.com/inbox"
           />
 
           <HeroBlock
@@ -183,7 +183,7 @@ export default function LeadDetail() {
         <SEO
           title={`${selectedLead.clientName} Lead | Liftrz Pakistan`}
           description="Review client contact details, payment verification, history, notes and nutrition targets from the Liftrz trainer inbox."
-          canonical="https://liftrz.vercel.app/inbox"
+          canonical="https://liftrz.com/inbox"
         />
 
         <HeroBlock
@@ -345,8 +345,8 @@ export default function LeadDetail() {
             <Surface className="p-6">
               <SectionTitle title="Client profile" description="Contact and booking context for this lead." />
               <div className="grid gap-4">
-                <InfoRow icon={<Mail className="h-4 w-4 text-primary" />} label="Email" value={selectedLead.clientEmail || 'client@example.com'} />
-                <InfoRow icon={<Phone className="h-4 w-4 text-primary" />} label="Phone" value={selectedLead.clientPhone || '+92 300 0000000'} />
+                <InfoRow icon={<Mail className="h-4 w-4 text-primary" />} label="Email" value={selectedLead.clientEmail || 'Not provided'} />
+                <InfoRow icon={<Phone className="h-4 w-4 text-primary" />} label="Phone" value={selectedLead.clientPhone || 'Not provided'} />
                 <InfoRow icon={<Calendar className="h-4 w-4 text-primary" />} label="Inquiry date" value={new Date(selectedLead.createdAt).toLocaleDateString()} />
                 <InfoRow icon={<Target className="h-4 w-4 text-primary" />} label="Goal" value={selectedLead.goal} />
               </div>

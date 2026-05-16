@@ -66,7 +66,7 @@ export default function PasswordReset() {
         <SEO
           title={token ? 'Set New Password | Liftrz Pakistan' : 'Reset Password | Liftrz Pakistan'}
           description="Reset your Liftrz account password."
-          canonical="https://liftrz.vercel.app/reset-password"
+          canonical="https://liftrz.com/reset-password"
         />
 
         <HeroBlock

@@ -37,7 +37,7 @@ This means:
 - ✅ 0 leads
 
 ### 4. Check your website
-- Open https://liftrz.vercel.app
+- Open https://liftrz.com
 - Hard refresh: **Ctrl + Shift + R**
 - Go to **Discover** — it should say **"No trainers yet"**
 - Go to **Admin** and log in with:

@@ -40,7 +40,7 @@ export default function Onboarding() {
         <SEO
           title="Client Onboarding | Liftrz Pakistan"
           description="Choose your main fitness objective before browsing verified personal trainers in Pakistan on Liftrz."
-          canonical="https://liftrz.vercel.app/onboarding"
+          canonical="https://liftrz.com/onboarding"
         />
 
         <HeroBlock

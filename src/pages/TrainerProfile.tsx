@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { CalendarCheck, CheckCircle2, Copy, Loader2, MapPin, MessageCircle, ShieldCheck, Star, Upload, Video, UserRoundCheck, Clock, Award, Languages } from 'lucide-react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { CalendarCheck, CheckCircle2, Copy, Loader2, LockKeyhole, MapPin, MessageCircle, ShieldCheck, Star, Upload, Video, UserRoundCheck, Clock, Award, Languages } from 'lucide-react';
 import { api } from '../utils/api';
 import { useSession } from '../utils/session';
 import SEO from '../components/SEO';
@@ -13,6 +13,7 @@ const money = (value: number | string) => `PKR ${Number(String(value || 0).repla
 
 export default function TrainerProfile() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const session = useSession();
   const toast = useToast();
   const [trainer, setTrainer] = useState<any>(null);
@@ -45,6 +46,10 @@ export default function TrainerProfile() {
         setTrainer(trainerData);
         setProtocols(protocolsData);
         setReviews(reviewsData);
+        // Redirect ID-based URL to slug-based URL for clean SEO URLs
+        if (trainerData?.slug && id === trainerData.id) {
+          navigate(`/trainer/${trainerData.slug}`, { replace: true });
+        }
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load trainer profile'))
       .finally(() => setLoading(false));
@@ -59,6 +64,11 @@ export default function TrainerProfile() {
       phone: current.phone || clientSession.phone || ''
     }));
   }, [clientSession?.id]);
+
+  useEffect(() => {
+    if (!trainer?.id) return;
+    api.trackEvent({ type: 'profile_view', trainerId: trainer.id, path: `/trainer/${trainer.slug || trainer.id}`, city: trainer.city, goal: trainer.specialty }).catch(() => {});
+  }, [trainer?.id]);
 
   const submitInquiry = async (event: FormEvent) => {
     event.preventDefault();
@@ -78,6 +88,7 @@ export default function TrainerProfile() {
         buddyPhone: buddyMode ? buddyInfo.phone : undefined
       });
       setInquiryStatus('success');
+      api.trackEvent({ type: 'inquiry_submit', trainerId: trainer.id, source: 'trainer_profile', city: trainer.city, goal: inquiryForm.goal || trainer.specialty }).catch(() => {});
       toast.addToast('Inquiry sent! The trainer will respond soon.', 'success');
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Failed to send inquiry';
@@ -138,7 +149,7 @@ export default function TrainerProfile() {
         <SEO
           title={`${trainer.name} | ${trainer.specialty} Personal Trainer in ${trainer.city} | Liftrz`}
           description={`Book ${trainer.name}, a verified ${trainer.specialty} personal trainer in ${trainer.city}, Pakistan. Compare packages, reviews and PKR pricing on Liftrz.`}
-          canonical={`https://liftrz.vercel.app/trainer/${trainer.id}`}
+          canonical={`https://liftrz.com/trainer/${trainer.slug || trainer.id}`}
           jsonLd={{
             '@context': 'https://schema.org',
             '@type': 'Person',
@@ -199,11 +210,26 @@ export default function TrainerProfile() {
               <div className="flex items-center gap-2"><UserRoundCheck className="h-4 w-4 text-primary" /> {trainer.verificationLevel || 'CNIC verified'}</div>
               <div className="flex items-center gap-2"><Languages className="h-4 w-4 text-primary" /> {trainer.languages?.join(', ') || 'Urdu, English'}</div>
               <div className="flex items-center gap-2"><CalendarCheck className="h-4 w-4 text-primary" /> {trainer.serviceModes?.join(', ') || 'Gym, Home Visit'}</div>
+              <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> {availableSlots > 0 ? `${availableSlots} client slots open` : 'Waitlist only right now'}</div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {trainer.identityStatus === 'approved' && <TrustBadge label="CNIC verified" />}
+              {trainer.certificationsStatus === 'approved' && <TrustBadge label="Certificates verified" />}
+              {trainer.payoutStatus === 'approved' && <TrustBadge label="Payout verified" />}
+              {trainer.packagesStatus === 'approved' && <TrustBadge label="Packages approved" />}
+              {trainer.profileAssetsStatus === 'approved' && <TrustBadge label="Media reviewed" />}
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              <ShareButton label="WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`Check out ${trainer.name} on Liftrz: https://liftrz.vercel.app/trainer/${trainer.id}`)}`} />
-              <CopyLinkButton url={`https://liftrz.vercel.app/trainer/${trainer.id}`} />
+              <a href="#inquiry" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white transition-colors hover:bg-primary-dark">
+                Book free trial
+              </a>
+              <a href="#packages" className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary/20">
+                Compare packages
+              </a>
+              <ShareButton label="WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`Check out ${trainer.name} on Liftrz: https://liftrz.com/trainer/${trainer.slug || trainer.id}`)}`} />
+              <CopyLinkButton url={`https://liftrz.com/trainer/${trainer.slug || trainer.id}`} />
             </div>
           </div>
         </section>
@@ -214,10 +240,62 @@ export default function TrainerProfile() {
           <p className="mt-3 text-sm leading-7 text-slate-400">{trainer.bio}</p>
         </Surface>
 
+        <div className="mt-6 grid gap-3 md:grid-cols-4">
+          <TrustTile icon={ShieldCheck} title="Verified profile" text="CNIC and proof reviewed before public listing." />
+          <TrustTile icon={LockKeyhole} title="Contact protected" text="Direct contact unlocks after payment verification." />
+          <TrustTile icon={Award} title="Real proof" text="Packages, reviews and transformations stay tied to bookings." />
+          <TrustTile icon={Clock} title="First-session safety" text="Clients can raise disputes from their dashboard." />
+        </div>
+
+        {trainer.profileGallery?.length > 0 && (
+          <section className="mt-10">
+            <SectionTitle title="Profile photos" description="More pictures from this trainer's coaching setup and profile." />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {trainer.profileGallery.slice(0, 5).map((photo: any, index: number) => (
+                <article key={`${photo.image}-${index}`} className="overflow-hidden rounded-2xl border border-slate-700/50 bg-surface">
+                  <div className="aspect-square bg-surface-high">
+                    <img src={photo.image} alt={photo.caption || `${trainer.name} profile photo ${index + 1}`} className="h-full w-full object-cover" />
+                  </div>
+                  <p className="min-h-14 px-4 py-3 text-sm leading-6 text-slate-300">{photo.caption || 'Profile photo'}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {trainer.transformationImages?.length > 0 && (
+          <section className="mt-10">
+            <SectionTitle title="Client transformations" description="Client progress pictures uploaded separately from the trainer profile gallery." />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {trainer.transformationImages.slice(0, 10).map((photo: any, index: number) => (
+                <article key={`${photo.image}-${index}`} className="overflow-hidden rounded-2xl border border-slate-700/50 bg-surface">
+                  <div className="grid grid-cols-2 bg-surface-high">
+                    {photo.beforeImage && (
+                      <div className="relative aspect-square">
+                        <img src={photo.beforeImage} alt={`Before ${photo.caption || `${trainer.name} transformation ${index + 1}`}`} className="h-full w-full object-cover" />
+                        <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">Before</span>
+                      </div>
+                    )}
+                    <div className="relative aspect-square">
+                      <img src={photo.afterImage || photo.image} alt={photo.caption || `${trainer.name} transformation ${index + 1}`} className="h-full w-full object-cover" />
+                      <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">After</span>
+                    </div>
+                  </div>
+                  <p className="min-h-16 px-4 py-3 text-sm leading-6 text-slate-300">{photo.caption || 'Client transformation'}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Packages + Inquiry Form */}
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div id="packages" className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <SectionTitle title="Training packages" description="Choose a package that fits your goal and budget." />
+            <div className="mb-4 rounded-2xl border border-primary/30 bg-primary/10 p-4">
+              <p className="text-sm font-semibold text-white">Not ready for a package?</p>
+              <p className="mt-1 text-xs leading-6 text-slate-400">Send a free inquiry and ask for a trial session, schedule fit, or custom monthly plan. Estimated monthly cost starts around {money(monthlyPrice)} if sessions are weekly.</p>
+            </div>
             <div className="grid gap-4">
               {protocols.map((protocol) => {
                 const protocolMonthly = Math.round(Number(String(protocol.price || 0).replace(/,/g, '')));
@@ -257,10 +335,10 @@ export default function TrainerProfile() {
           </div>
 
           {/* Inquiry Form */}
-          <div className="h-fit lg:sticky lg:top-24">
+          <div id="inquiry" className="h-fit scroll-mt-24 lg:sticky lg:top-24">
             <Surface className="p-6">
-              <h2 className="text-xl font-bold text-white">Send free inquiry</h2>
-              <p className="mt-2 text-sm text-slate-400">Tell {trainer.name} about your goals. No payment required to reach out.</p>
+              <h2 className="text-xl font-bold text-white">Book a free trial inquiry</h2>
+              <p className="mt-2 text-sm text-slate-400">Ask {trainer.name} about availability, trial session, monthly pricing, and training mode. No payment required to reach out.</p>
 
               {inquiryStatus === 'success' ? (
                 <div className="mt-6 rounded-xl border border-success/30 bg-success/10 p-6 text-center">
@@ -283,7 +361,7 @@ export default function TrainerProfile() {
                   {selectedPackage && (
                     <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3">
                       <p className="text-xs font-medium text-primary">Interested in: {selectedPackage.title}</p>
-                      <p className="text-xs text-slate-400">{money(selectedPackage.price)} · {selectedPackage.duration}</p>
+                      <p className="text-xs text-slate-400">{money(selectedPackage.price)} - {selectedPackage.duration}</p>
                     </div>
                   )}
                   <Input label="Your name" value={inquiryForm.name} onChange={(value) => setInquiryForm({ ...inquiryForm, name: value })} />
@@ -425,7 +503,35 @@ export default function TrainerProfile() {
           </div>
         </section>
       </PageContainer>
+      <div className="fixed inset-x-0 bottom-20 z-40 border-t border-slate-700/50 bg-background/95 p-3 backdrop-blur-xl md:hidden">
+        <div className="mx-auto flex max-w-xl gap-2">
+          <a href="#inquiry" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white">
+            <MessageCircle className="h-4 w-4" /> Send inquiry
+          </a>
+          <a href="#packages" className="flex items-center justify-center rounded-xl border border-slate-700/50 px-4 py-3 text-sm font-semibold text-slate-300">
+            Packages
+          </a>
+        </div>
+      </div>
     </PageShell>
+  );
+}
+
+function TrustTile({ icon: Icon, title, text }: { icon: any; title: string; text: string }) {
+  return (
+    <Surface className="p-4">
+      <Icon className="h-5 w-5 text-primary" />
+      <h3 className="mt-3 text-sm font-semibold text-white">{title}</h3>
+      <p className="mt-1 text-xs leading-5 text-slate-400">{text}</p>
+    </Surface>
+  );
+}
+
+function TrustBadge({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-3 py-1.5 text-xs font-bold text-success">
+      <CheckCircle2 className="h-3.5 w-3.5" /> {label}
+    </span>
   );
 }
 

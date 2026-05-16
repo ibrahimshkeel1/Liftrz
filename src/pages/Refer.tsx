@@ -10,7 +10,7 @@ export default function Refer() {
         <SEO
           title="Refer & Earn | Liftrz Pakistan"
           description="Invite friends to Liftrz and earn PKR 500 credit for every successful referral."
-          canonical="https://liftrz.vercel.app/refer"
+          canonical="https://liftrz.com/refer"
         />
 
         <HeroBlock

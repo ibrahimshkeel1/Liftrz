@@ -34,10 +34,14 @@ export const api = {
   validateReferral: (code: string) => request(`/auth/referral/${code}`),
 
   getTrainers: (includePending = false) => request(`/trainers${includePending ? '?includePending=true' : ''}`),
+  getFeaturedTrainers: () => request('/featured-trainers'),
   getTrainer: (id: string) => request(`/trainers/${id}`),
   createTrainer: (data: any) => request('/trainers', { method: 'POST', body: JSON.stringify(data) }),
+  updateTrainerProfile: (id: string, data: any) => request(`/trainers/${id}/profile`, { method: 'PATCH', body: JSON.stringify(data) }),
+  requestFeaturedPlacement: (id: string, data: any) => request(`/trainers/${id}/featured-request`, { method: 'POST', body: JSON.stringify(data) }),
   updateTrainerStatus: (id: string, data: any) => request(`/admin/trainers/${id}/status`, { method: 'PATCH', body: JSON.stringify(data) }),
   updateTrainerCommission: (id: string, data: any) => request(`/admin/trainers/${id}/commission`, { method: 'PATCH', body: JSON.stringify(data) }),
+  updateTrainerFeatured: (id: string, data: any) => request(`/admin/trainers/${id}/featured`, { method: 'PATCH', body: JSON.stringify(data) }),
   getTrainerStats: (id: string) => request(`/trainers/${id}/stats`),
 
   getReviews: (trainerId: string) => request(`/trainers/${trainerId}/reviews`),
@@ -50,7 +54,10 @@ export const api = {
   getLeads: (trainerId: string) => request(`/trainers/${trainerId}/leads`),
   getAllLeads: () => request('/leads'),
   createLead: (data: any) => request('/leads', { method: 'POST', body: JSON.stringify(data) }),
+  createMatchRequest: (data: any) => request('/match-requests', { method: 'POST', body: JSON.stringify(data) }),
   updateLeadStatus: (id: string, data: any) => request(`/leads/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  trackEvent: (data: any) => request('/events', { method: 'POST', body: JSON.stringify(data) }),
+  createContactMessage: (data: any) => request('/contact', { method: 'POST', body: JSON.stringify(data) }),
 
   uploadFile: (data: any) => request('/uploads', { method: 'POST', body: JSON.stringify(data) }),
 
@@ -68,8 +75,12 @@ export const api = {
   confirmPasswordReset: (token: string, data: any) => request(`/auth/reset-password/${token}`, { method: 'POST', body: JSON.stringify(data) }),
 
   getAdminStats: () => request('/admin/stats'),
+  getAdminNotifications: () => request('/admin/notifications'),
   getAdminChats: () => request('/admin/chats'),
   getAdminTrainers: () => request('/admin/trainers'),
+  updateTrainerProfileReview: (id: string, data: any) => request(`/admin/trainers/${id}/profile-review`, { method: 'PATCH', body: JSON.stringify(data) }),
+  getAdminProtocols: () => request('/admin/protocols'),
+  updateAdminProtocol: (id: string, data: any) => request(`/admin/protocols/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   getAdminPayments: () => request('/admin/payments'),
   verifyPayment: (id: string, data: any = { status: 'verified' }) => request(`/admin/payments/${id}/verify`, { method: 'PATCH', body: JSON.stringify(data) }),
   getAdminPayouts: () => request('/admin/payouts'),

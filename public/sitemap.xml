@@ -1,88 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://liftrz.vercel.app/</loc>
+    <loc>https://liftrz.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/discover</loc>
+    <loc>https://liftrz.com/discover</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/personal-trainer-lahore</loc>
+    <loc>https://liftrz.com/personal-trainer-lahore</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/personal-trainer-karachi</loc>
+    <loc>https://liftrz.com/personal-trainer-karachi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/personal-trainer-islamabad</loc>
+    <loc>https://liftrz.com/personal-trainer-islamabad</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/personal-trainer-rawalpindi</loc>
+    <loc>https://liftrz.com/personal-trainer-rawalpindi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/personal-trainer-faisalabad</loc>
+    <loc>https://liftrz.com/personal-trainer-faisalabad</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/personal-trainer-gujranwala</loc>
+    <loc>https://liftrz.com/personal-trainer-gujranwala</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/personal-trainer-sialkot</loc>
+    <loc>https://liftrz.com/personal-trainer-sialkot</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/online-fitness-coach-pakistan</loc>
+    <loc>https://liftrz.com/online-fitness-coach-pakistan</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/female-personal-trainer-lahore</loc>
+    <loc>https://liftrz.com/female-personal-trainer-lahore</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/home-personal-trainer-karachi</loc>
+    <loc>https://liftrz.com/home-personal-trainer-karachi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/register/client</loc>
+    <loc>https://liftrz.com/register/client</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/register/trainer</loc>
+    <loc>https://liftrz.com/register/trainer</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/trainer/zaid-ahmed</loc>
+    <loc>https://liftrz.com/for-trainers</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/how-it-works</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/transformations</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/tools</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/trainer/sara-khan</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://liftrz.com/trust-safety</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://liftrz.vercel.app/trainer/bilal-butt</loc>
+    <loc>https://liftrz.com/personal-trainer-dha-lahore</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.65</priority>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/female-trainer-karachi</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/online-fat-loss-coach-pakistan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/home-trainer-lahore</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://liftrz.com/register</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

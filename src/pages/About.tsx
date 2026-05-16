@@ -10,7 +10,7 @@ export default function About() {
         <SEO
           title="About Us | Liftrz Pakistan"
           description="Liftrz is Pakistan's verified personal trainer marketplace. Learn about our mission, how we verify trainers, and why we started."
-          canonical="https://liftrz.vercel.app/about"
+          canonical="https://liftrz.com/about"
         />
 
         <HeroBlock

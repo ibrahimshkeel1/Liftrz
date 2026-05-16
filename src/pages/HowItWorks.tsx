@@ -49,7 +49,7 @@ export default function HowItWorks() {
         <SEO
           title="How It Works | Liftrz Pakistan"
           description="A simple 6-step guide to finding, booking, and training with verified personal trainers in Pakistan through Liftrz."
-          canonical="https://liftrz.vercel.app/how-it-works"
+          canonical="https://liftrz.com/how-it-works"
         />
 
         <HeroBlock

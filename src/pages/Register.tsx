@@ -6,6 +6,7 @@ import { api } from '../utils/api';
 import SEO from '../components/SEO';
 import { useToast } from '../components/ToastProvider';
 import { roleHome, setSession } from '../utils/session';
+import { getAreasForCity } from '../utils/areas';
 import { HeroBlock, InfoPill, PageContainer, PageShell, Surface } from '../components/premium';
 
 const cities = ['Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Gujranwala', 'Sialkot', 'Online'];
@@ -63,18 +64,16 @@ export default function Register() {
           location: form.city,
           area: form.area,
           gender: form.gender,
-          bio: form.bio,
-          price: form.price,
-          capacity: form.capacity,
-          payoutMethod: form.payoutMethod,
-          payoutAccount: form.payoutAccount,
+          bio: '',
+          price: '',
+          capacity: '',
+          payoutMethod: 'Bank Transfer',
+          payoutAccount: '',
           specialty: form.goals[0] || 'General Fitness',
           goals: form.goals,
           serviceModes: form.serviceModes,
           languages: form.languages.split(',').map((item) => item.trim()).filter(Boolean),
-          certifications: form.certifications.split(',').map((item) => item.trim()).filter(Boolean).length
-            ? form.certifications.split(',').map((item) => item.trim()).filter(Boolean)
-            : ['Pending admin verification'],
+          certifications: [],
           referralCode: form.referralCode
         });
         if (data?.token && data?.user) {
@@ -109,7 +108,8 @@ export default function Register() {
     }
   };
 
-  const steps = role === 'trainer' ? ['Profile', 'Services', 'Verification'] : ['Account', 'Goals', 'Book'];
+  const steps = role === 'trainer' ? ['Account', 'Specialties', 'Offer'] : ['Account', 'Goals', 'Book'];
+  const trainerEssentialsComplete = Boolean(form.name && form.phone && form.email && form.password && form.city && form.goals.length && form.serviceModes.length);
 
   return (
     <PageShell>
@@ -117,14 +117,14 @@ export default function Register() {
         <SEO
           title={`${role === 'trainer' ? 'Register as a Personal Trainer' : 'Create a Client Account'} | Liftrz Pakistan`}
           description="Join Liftrz Pakistan to book verified personal trainers or register as a trainer for Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Gujranwala, Sialkot and online coaching."
-          canonical={`https://liftrz.vercel.app/register/${role}`}
+          canonical={`https://liftrz.com/register/${role}`}
         />
 
         <HeroBlock
           kicker="Liftrz onboarding"
           title={role === 'trainer' ? 'Trainer application' : 'Client registration'}
           description={role === 'trainer'
-            ? 'Apply to sell verified training packages in Pakistan. Your profile stays hidden until admin approval.'
+            ? 'Create your trainer account quickly. After signup, your dashboard will guide CNIC verification, packages, photos, certificates and payout details for admin approval.'
             : 'Create a client profile to book verified trainers, keep payment records and unlock trainer contact after verification.'}
           aside={
             <Surface className="p-6">
@@ -170,13 +170,18 @@ export default function Register() {
                   ))}
                 </div>
 
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-primary">{role === 'trainer' ? 'Step 1 - essentials' : 'Account details'}</p>
+                    <p className="mt-1 text-sm text-slate-400">{role === 'trainer' ? 'These fields create your trainer login and let Liftrz contact you on WhatsApp.' : 'Create an account so trainers can respond to your inquiries.'}</p>
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <Input label="Full name" value={form.name} onChange={(value) => setForm({ ...form, name: value })} required />
                   <Input label="Phone / WhatsApp" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} placeholder="+92..." required />
                   <Input label="Email" type="email" value={form.email} onChange={(value) => setForm({ ...form, email: value })} required />
                   <Input label="Password" type="password" value={form.password} onChange={(value) => setForm({ ...form, password: value })} required />
                   <Select label="City" value={form.city} onChange={(value) => setForm({ ...form, city: value })} options={cities} />
-                  <Input label="Area" value={form.area} onChange={(value) => setForm({ ...form, area: value })} placeholder="DHA, Clifton, F-11" />
+                  <Input label="Area" value={form.area} onChange={(value) => setForm({ ...form, area: value })} placeholder="Select your area" suggestions={getAreasForCity(form.city)} />
                   <Select label="Gender" value={form.gender} onChange={(value) => setForm({ ...form, gender: value })} options={['Prefer not to say', 'Male', 'Female']} emptyToBlank />
                   <Input label="Languages" value={form.languages} onChange={(value) => setForm({ ...form, languages: value })} placeholder="Urdu, English" />
                 </div>
@@ -187,25 +192,24 @@ export default function Register() {
 
                 {role === 'trainer' && (
                   <>
-                    <ChoiceGroup title="Service modes" items={serviceModes} values={form.serviceModes} onToggle={(item) => toggleList('serviceModes', item)} />
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <Input label="Session price PKR" value={form.price} onChange={(value) => setForm({ ...form, price: value })} required />
-                      <Input label="Capacity" value={form.capacity} onChange={(value) => setForm({ ...form, capacity: value })} required />
-                      <Select label="Payout method" value={form.payoutMethod} onChange={(value) => setForm({ ...form, payoutMethod: value })} options={['Bank Transfer', 'JazzCash', 'EasyPaisa']} />
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-primary">Step 2 - offer</p>
+                      <p className="mt-1 text-sm text-slate-400">Tell clients how you train. Packages, CNIC, photos, payout and certificates are completed from your dashboard after signup.</p>
                     </div>
-                    <Input label="Payout account" value={form.payoutAccount} onChange={(value) => setForm({ ...form, payoutAccount: value })} placeholder="Bank IBAN or wallet number" required />
-                    <TextArea label="Trainer bio" value={form.bio} onChange={(value) => setForm({ ...form, bio: value })} rows={4} required />
-                    <TextArea label="Certifications / proof notes" value={form.certifications} onChange={(value) => setForm({ ...form, certifications: value })} rows={3} placeholder="ACE, ISSA, sports nutrition, gym employment, transformation proof" />
-                    <div className="grid gap-3 text-sm text-slate-400">
-                      <CheckLine checked={form.cnicConsent} onChange={(checked) => setForm({ ...form, cnicConsent: checked })} text="I agree to submit CNIC/certification proof for admin verification before going public." />
-                      <CheckLine checked={form.transformationConsent} onChange={(checked) => setForm({ ...form, transformationConsent: checked })} text="I will only upload transformation photos with client consent." />
+                    <ChoiceGroup title="Service modes" items={serviceModes} values={form.serviceModes} onToggle={(item) => toggleList('serviceModes', item)} />
+                    <div className="rounded-2xl border border-slate-700/50 bg-surface-high/50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-widest text-primary">After signup</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-400">You will get dashboard access immediately. Submit CNIC, card pictures, profile photos, transformations, packages, payout details and certificates there. Each section says approval within 24hr after submission.</p>
+                    </div>
+                    <div className={`rounded-2xl border p-4 text-sm ${trainerEssentialsComplete ? 'border-success/30 bg-success/10 text-success' : 'border-slate-700/50 bg-surface-high/50 text-slate-400'}`}>
+                      {trainerEssentialsComplete ? 'Ready to create your trainer panel.' : 'Complete essentials: contact, city, specialty and service mode.'}
                     </div>
                   </>
                 )}
 
                 {status && status !== 'loading' && <p className="text-sm text-red-400">{status}</p>}
                 <button disabled={status === 'loading'} className="rounded-full bg-primary py-4 text-xs font-semibold text-white disabled:opacity-50">
-                  {status === 'loading' ? 'Submitting...' : role === 'trainer' ? 'Submit trainer application' : 'Create client account'}
+                  {status === 'loading' ? 'Submitting...' : role === 'trainer' ? 'Create trainer account' : 'Create client account'}
                 </button>
               </form>
             )}
@@ -236,6 +240,16 @@ export default function Register() {
                 </Link>
               </div>
             </Surface>
+            {role === 'trainer' && (
+              <Surface className="p-6">
+                <p className="text-xs font-semibold text-primary">After approval</p>
+                <div className="mt-4 grid gap-3 text-sm text-slate-400">
+                  <div>1. Verify CNIC and card pictures.</div>
+                  <div>2. Add packages, photos, transformations and certificates.</div>
+                  <div>3. Add payout details for admin to pay due balances.</div>
+                </div>
+              </Surface>
+            )}
           </div>
         </div>
       </PageContainer>
@@ -243,11 +257,17 @@ export default function Register() {
   );
 }
 
-function Input({ label, value, onChange, type = 'text', placeholder = '', required = false }: { label: string; value: string; onChange: (value: string) => void; type?: string; placeholder?: string; required?: boolean }) {
+function Input({ label, value, onChange, type = 'text', placeholder = '', required = false, suggestions }: { label: string; value: string; onChange: (value: string) => void; type?: string; placeholder?: string; required?: boolean; suggestions?: string[] }) {
+  const id = label.toLowerCase().replace(/\s+/g, '-');
   return (
     <label className="grid gap-2">
       <span className="text-xs font-medium text-slate-500">{label}</span>
-      <input required={required} type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="rounded-2xl border border-slate-700/50 bg-surface-high p-4 text-white outline-none placeholder:text-slate-600" />
+      <input required={required} type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} list={suggestions ? `${id}-list` : undefined} className="rounded-2xl border border-slate-700/50 bg-surface-high p-4 text-white outline-none placeholder:text-slate-600" />
+      {suggestions && (
+        <datalist id={`${id}-list`}>
+          {suggestions.map((s) => <option key={s} value={s} />)}
+        </datalist>
+      )}
     </label>
   );
 }

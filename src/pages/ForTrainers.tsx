@@ -51,7 +51,7 @@ export default function ForTrainers() {
         <SEO
           title="For Trainers | Join Liftrz Pakistan"
           description="Grow your personal training business with Liftrz. 15% commission, verified reviews, payment protection, and built-in client management."
-          canonical="https://liftrz.vercel.app/for-trainers"
+          canonical="https://liftrz.com/for-trainers"
         />
 
         <HeroBlock

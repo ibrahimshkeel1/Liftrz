@@ -17,12 +17,13 @@ function setMeta(selector: string, key: 'name' | 'property', value: string, cont
   tag.content = content;
 }
 
-export default function SEO({ title, description, canonical = 'https://liftrz.vercel.app/', jsonLd }: SEOProps) {
+export default function SEO({ title, description, canonical = 'https://liftrz.com/', jsonLd }: SEOProps) {
   useEffect(() => {
     document.title = title;
     setMeta('meta[name="description"]', 'name', 'description', description);
     setMeta('meta[property="og:title"]', 'property', 'og:title', title);
     setMeta('meta[property="og:description"]', 'property', 'og:description', description);
+    setMeta('meta[property="og:url"]', 'property', 'og:url', canonical);
     setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', title);
     setMeta('meta[name="twitter:description"]', 'name', 'twitter:description', description);
 

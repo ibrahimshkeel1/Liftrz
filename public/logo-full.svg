@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="180" viewBox="0 0 760 180" role="img" aria-label="Liftrz">
+  <title>Liftrz</title>
+  <defs>
+    <linearGradient id="liftrz-orange" x1="36" y1="28" x2="144" y2="152" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF7A18"/>
+      <stop offset="1" stop-color="#F2480C"/>
+    </linearGradient>
+    <linearGradient id="liftrz-white" x1="224" y1="42" x2="720" y2="136" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <g fill="#F8FAFC">
+      <rect x="18" y="70" width="8" height="40" rx="4"/>
+      <rect x="32" y="58" width="12" height="64" rx="5"/>
+      <rect x="162" y="58" width="12" height="64" rx="5"/>
+      <rect x="180" y="70" width="8" height="40" rx="4"/>
+    </g>
+    <path fill="url(#liftrz-orange)" d="M88 26 55 92h39l-24 63 98-84h-54l30-45H88z"/>
+    <path fill="#F97316" d="M102 75h45l-58 48h32l-77 43 31-61H43l59-30z"/>
+  </g>
+  <g font-family="Arial Black, Impact, sans-serif" font-weight="900" font-style="italic">
+    <text x="226" y="133" fill="url(#liftrz-white)" font-size="118">L</text>
+    <g transform="skewX(-9)">
+      <rect x="337" y="72" width="24" height="61" rx="3" fill="url(#liftrz-white)"/>
+      <rect x="340" y="43" width="25" height="21" rx="2" fill="#F97316"/>
+    </g>
+    <text x="365" y="133" fill="url(#liftrz-white)" font-size="118" textLength="365" lengthAdjust="spacingAndGlyphs">ftrz</text>
+  </g>
+</svg>

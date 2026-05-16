@@ -94,7 +94,7 @@ export default function SavedTrainers() {
                     <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-primary text-primary" /> {trainer.rating}</span>
                     <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-slate-500" /> {trainer.city}</span>
                   </div>
-                  <Link to={`/trainer/${trainer.id}`} className="mt-5 flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white hover:bg-primary-dark">
+                  <Link to={`/trainer/${trainer.slug || trainer.id}`} className="mt-5 flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white hover:bg-primary-dark">
                     View Profile
                   </Link>
                 </div>

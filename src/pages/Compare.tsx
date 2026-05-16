@@ -6,6 +6,10 @@ import { api } from '../utils/api';
 import { SkeletonCard } from '../components/Skeleton';
 import { HeroBlock, PageContainer, PageShell } from '../components/premium';
 
+const toNumber = (value: number | string | undefined) => Number(String(value || 0).replace(/,/g, ''));
+const toSessionPrice = (trainer: any) => toNumber(trainer.sessionPrice ?? trainer.price);
+const toMonthlyEstimate = (trainer: any) => toNumber(trainer.monthlyPrice ?? trainer.monthlyPackagePrice) || Math.round(toSessionPrice(trainer) * 12);
+
 export default function Compare() {
   const [trainers, setTrainers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,11 +70,11 @@ export default function Compare() {
               <tbody className="text-slate-300">
                 <tr className="border-b border-slate-700/30">
                   <td className="py-3 pr-4 text-slate-400">Price / session</td>
-                  {compared.map((t) => <td key={t.id} className="py-3 px-4">PKR {t.price}</td>)}
+                  {compared.map((t) => <td key={t.id} className="py-3 px-4">PKR {toSessionPrice(t).toLocaleString()}</td>)}
                 </tr>
                 <tr className="border-b border-slate-700/30">
                   <td className="py-3 pr-4 text-slate-400">Monthly estimate</td>
-                  {compared.map((t) => <td key={t.id} className="py-3 px-4 font-semibold text-primary">PKR {Math.round(Number(String(t.price || 0).replace(/,/g, '')) * 12).toLocaleString()}</td>)}
+                  {compared.map((t) => <td key={t.id} className="py-3 px-4 font-semibold text-primary">~PKR {toMonthlyEstimate(t).toLocaleString()}</td>)}
                 </tr>
                 <tr className="border-b border-slate-700/30">
                   <td className="py-3 pr-4 text-slate-400">Rating</td>
@@ -100,7 +104,7 @@ export default function Compare() {
                   <td className="py-3 pr-4"></td>
                   {compared.map((t) => (
                     <td key={t.id} className="py-3 px-4">
-                      <Link to={`/trainer/${t.id}`} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary-dark">View Profile</Link>
+                      <Link to={`/trainer/${t.slug || t.id}`} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary-dark">View Profile</Link>
                     </td>
                   ))}
                 </tr>
@@ -134,7 +138,7 @@ export default function Compare() {
                 >
                   <div>
                     <p className="font-semibold text-white">{t.name}</p>
-                    <p className="text-xs text-slate-400">{t.specialty} · {t.city}</p>
+                    <p className="text-xs text-slate-400">{t.specialty} - {t.city}</p>
                   </div>
                   {isSelected ? <Check className="h-5 w-5 text-primary" /> : <div className="h-5 w-5 rounded-full border border-slate-600" />}
                 </button>

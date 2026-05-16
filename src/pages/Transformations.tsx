@@ -53,7 +53,7 @@ export default function Transformations() {
         <SEO
           title="Client Transformations | Before & After | Liftrz Pakistan"
           description="Real results from verified personal trainers in Pakistan. See transformations, read testimonials, and find your coach."
-          canonical="https://liftrz.vercel.app/transformations"
+          canonical="https://liftrz.com/transformations"
         />
 
         <HeroBlock
@@ -125,7 +125,7 @@ export default function Transformations() {
                     {t.clientName && <span className="flex items-center gap-1"><UserCheck className="h-3.5 w-3.5" /> {t.clientName}</span>}
                     <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {t.duration}</span>
                   </div>
-                  <Link to={`/trainer/${t.trainerId}`} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                  <Link to={`/trainer/${t.trainerSlug || t.trainerId}`} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
                     Trainer: {t.trainerName} <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>

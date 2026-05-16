@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { MotionCard, Reveal } from './Motion';
 
 export function PageShell({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
@@ -35,13 +36,13 @@ export function HeroBlock({
 }) {
   return (
     <section className={`grid gap-8 lg:grid-cols-[1fr_0.72fr] lg:items-end ${className}`}>
-      <div>
+      <Reveal>
         <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary">{kicker}</p>
         <h1 className="editorial-header text-5xl font-bold leading-[0.94] text-white md:text-7xl">{title}</h1>
         <p className="mt-5 max-w-3xl text-base leading-8 text-slate-400 md:text-lg">{description}</p>
         {actions ? <div className="mt-7 flex flex-wrap gap-3">{actions}</div> : null}
-      </div>
-      {aside ? <div>{aside}</div> : null}
+      </Reveal>
+      {aside ? <Reveal delay={0.12}>{aside}</Reveal> : null}
     </section>
   );
 }
@@ -64,10 +65,10 @@ export function SurfaceGrid({ children, className = '' }: { children: ReactNode;
 
 export function MetricCard({ value, label, active = false }: { value: ReactNode; label: string; active?: boolean }) {
   return (
-    <div className={`rounded-2xl border p-4 ${active ? 'border-primary bg-primary text-white' : 'border-slate-700/50 bg-surface-high/60 text-white'}`}>
+    <MotionCard className={`rounded-2xl border p-4 ${active ? 'border-primary bg-primary text-white' : 'border-slate-700/50 bg-surface-high/60 text-white'}`}>
       <p className={`text-xs font-medium ${active ? 'text-white/70' : 'text-slate-400'}`}>{label}</p>
       <div className="mt-2 text-xl font-semibold">{value}</div>
-    </div>
+    </MotionCard>
   );
 }
 
@@ -81,9 +82,9 @@ export function InfoPill({ children, className = '' }: { children: ReactNode; cl
 
 export function SectionTitle({ title, description }: { title: string; description?: string }) {
   return (
-    <div className="mb-6">
+    <Reveal className="mb-6">
       <h2 className="editorial-header text-4xl font-bold text-white md:text-5xl">{title}</h2>
       {description ? <p className="mt-3 max-w-2xl text-slate-400">{description}</p> : null}
-    </div>
+    </Reveal>
   );
 }

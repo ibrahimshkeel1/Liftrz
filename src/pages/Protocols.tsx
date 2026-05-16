@@ -94,7 +94,7 @@ export default function Protocols() {
         <SEO
           title="Trainer Packages | Liftrz Pakistan"
           description="Create and manage standardized coaching packages, pricing, duration and offer features from the Liftrz trainer dashboard."
-          canonical="https://liftrz.vercel.app/lab"
+          canonical="https://liftrz.com/lab"
         />
 
         <HeroBlock
@@ -110,7 +110,7 @@ export default function Protocols() {
             <Surface className="p-6">
               <p className="text-xs font-semibold text-primary">Offer posture</p>
               <div className="mt-5 grid gap-3">
-                <MetricCard label="Live packages" value={protocols.length} active={protocols.length > 0} />
+                <MetricCard label="Approved packages" value={protocols.filter((protocol) => protocol.status === 'approved' || !protocol.status).length} active={protocols.length > 0} />
                 <MetricCard label="Price range" value={protocols.length ? `PKR ${Math.min(...protocols.map((protocol) => Number(protocol.price || 0))).toLocaleString()}` : 'None'} />
                 <MetricCard label="Packaging" value="Standardized" />
               </div>
@@ -141,7 +141,7 @@ export default function Protocols() {
                 <Surface className="overflow-hidden">
                 <div className="flex items-start justify-between gap-4 border-b border-slate-700/50 px-6 py-5">
                   <div>
-                    <p className="text-xs font-semibold text-primary">Liftrz package</p>
+                    <p className="text-xs font-semibold text-primary">Liftrz package / {protocol.status === 'approved' || !protocol.status ? 'approved' : 'approval within 24hr'}</p>
                     <h2 className="editorial-header mt-2 text-3xl font-bold text-white">{protocol.title}</h2>
                   </div>
                   <button type="button" disabled={deletingId === protocol.id} onClick={() => handleDelete(protocol.id)} className="rounded-full border border-slate-700/50 bg-surface-high/80 p-3 text-slate-400 transition hover:border-rose-500/40 hover:text-rose-300 disabled:opacity-50">
@@ -152,7 +152,7 @@ export default function Protocols() {
                 <div className="grid gap-5 px-6 py-6">
                   <div className="grid grid-cols-2 gap-3">
                     <MetricCard label="Price" value={`PKR ${Number(protocol.price || 0).toLocaleString()}`} active />
-                    <MetricCard label="Duration" value={protocol.duration || 'Custom'} />
+                    <MetricCard label="Status" value={protocol.status === 'approved' || !protocol.status ? 'Approved' : protocol.status === 'rejected' ? 'Rejected' : 'Pending'} />
                   </div>
 
                   <p className="text-sm leading-7 text-slate-400">{protocol.description}</p>

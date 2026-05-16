@@ -56,7 +56,7 @@ export default function Login() {
         <SEO
           title={`Login as ${role[0].toUpperCase()}${role.slice(1)} | Liftrz Pakistan`}
           description="Secure login for Liftrz clients, trainers and admin."
-          canonical={`https://liftrz.vercel.app/login/${role}`}
+          canonical={`https://liftrz.com/login/${role}`}
         />
 
         <HeroBlock

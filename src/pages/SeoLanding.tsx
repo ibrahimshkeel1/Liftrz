@@ -5,7 +5,7 @@ import SEO from '../components/SEO';
 import { api } from '../utils/api';
 import { HeroBlock, MetricCard, PageContainer, PageShell, SectionTitle, Surface } from '../components/premium';
 
-const baseUrl = 'https://liftrz.vercel.app';
+const baseUrl = 'https://liftrz.com';
 
 const pages: Record<string, {
   title: string;
@@ -202,6 +202,82 @@ const pages: Record<string, {
       { label: 'Find home visit trainers', href: '/discover?city=Karachi&mode=Home%20Visit' },
       { label: 'Register as trainer', href: '/register/trainer' }
     ]
+  },
+  '/personal-trainer-dha-lahore': {
+    title: 'Personal Trainer DHA Lahore | Verified Fitness Coaches | Liftrz',
+    description: 'Find verified personal trainers serving DHA Lahore for gym, home visit and online coaching.',
+    kicker: 'DHA Lahore trainers',
+    h1: 'Find a personal trainer in DHA Lahore',
+    city: 'Lahore',
+    areas: ['DHA Phase 1', 'DHA Phase 3', 'DHA Phase 5', 'DHA Phase 6', 'DHA Raya'],
+    faqs: [
+      { question: 'Can I find home visit trainers in DHA Lahore?', answer: 'Yes. Use the Home Visit filter and check each trainer profile for home visit areas.' },
+      { question: 'Are DHA Lahore trainers verified?', answer: 'Public Liftrz trainers go through admin review before appearing in discovery.' },
+      { question: 'Can I compare packages?', answer: 'Yes. Approved packages show price, duration and included support.' }
+    ],
+    related: [
+      { label: 'Personal trainer Lahore', href: '/personal-trainer-lahore' },
+      { label: 'Home trainer Lahore', href: '/home-trainer-lahore' },
+      { label: 'Find DHA trainers', href: '/discover?city=Lahore' }
+    ]
+  },
+  '/female-trainer-karachi': {
+    title: 'Female Trainer Karachi | Verified Personal Trainers | Liftrz',
+    description: 'Search female personal trainers in Karachi for gym, home visit and online coaching.',
+    kicker: 'Female trainers Karachi',
+    h1: 'Find a female trainer in Karachi',
+    city: 'Karachi',
+    gender: 'Female',
+    areas: ['Clifton', 'DHA', 'Gulshan', 'PECHS', 'North Nazimabad'],
+    faqs: [
+      { question: 'Can I filter female trainers in Karachi?', answer: 'Yes. Use the gender filter in discovery to show female trainers where available.' },
+      { question: 'Do female trainers offer online coaching?', answer: 'Some trainers offer online coaching. Use the Online mode filter.' },
+      { question: 'When does contact unlock?', answer: 'Contact unlocks after payment proof is verified by admin.' }
+    ],
+    related: [
+      { label: 'Personal trainer Karachi', href: '/personal-trainer-karachi' },
+      { label: 'Home trainer Karachi', href: '/home-personal-trainer-karachi' },
+      { label: 'Search female trainers', href: '/discover?city=Karachi&gender=Female' }
+    ]
+  },
+  '/online-fat-loss-coach-pakistan': {
+    title: 'Online Fat Loss Coach Pakistan | Verified Trainers | Liftrz',
+    description: 'Find verified online fat loss coaches in Pakistan with reviewed packages and client transformations.',
+    kicker: 'Online fat loss coaching',
+    h1: 'Hire an online fat loss coach in Pakistan',
+    city: 'Online',
+    mode: 'Online',
+    specialty: 'Fat loss',
+    areas: ['Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Nationwide'],
+    faqs: [
+      { question: 'Can online coaches help with fat loss?', answer: 'Yes. Choose Fat loss and Online filters to compare relevant trainers.' },
+      { question: 'Are transformations reviewed?', answer: 'Transformation photos can be admin-reviewed before appearing publicly.' },
+      { question: 'Can I work with a coach from another city?', answer: 'Yes. Online mode supports trainers across Pakistan.' }
+    ],
+    related: [
+      { label: 'Online fitness coach Pakistan', href: '/online-fitness-coach-pakistan' },
+      { label: 'Personal trainer Lahore', href: '/personal-trainer-lahore' },
+      { label: 'Find fat loss coaches', href: '/discover?city=Online&mode=Online&specialty=Fat%20loss' }
+    ]
+  },
+  '/home-trainer-lahore': {
+    title: 'Home Trainer Lahore | Verified Home Visit Coaches | Liftrz',
+    description: 'Book verified home trainers in Lahore for strength, fat loss, mobility and general fitness.',
+    kicker: 'Home trainers Lahore',
+    h1: 'Find a home trainer in Lahore',
+    city: 'Lahore',
+    mode: 'Home Visit',
+    areas: ['DHA', 'Gulberg', 'Model Town', 'Johar Town', 'Bahria Town'],
+    faqs: [
+      { question: 'How do I find home trainers in Lahore?', answer: 'Use the Home Visit filter in discovery and check trainer availability areas.' },
+      { question: 'Are home trainers verified?', answer: 'Liftrz reviews trainer identity and proof before profiles go public.' },
+      { question: 'Can I ask for availability before paying?', answer: 'Yes. Send a free inquiry first and discuss schedule fit.' }
+    ],
+    related: [
+      { label: 'Personal trainer Lahore', href: '/personal-trainer-lahore' },
+      { label: 'Personal trainer DHA Lahore', href: '/personal-trainer-dha-lahore' },
+      { label: 'Find home trainers', href: '/discover?city=Lahore&mode=Home%20Visit' }
+    ]
   }
 };
 
@@ -306,13 +382,20 @@ export default function SeoLanding() {
           <h2 className="text-3xl editorial-header font-bold mb-5">Featured matches</h2>
           <div className="grid md:grid-cols-3 gap-3">
             {matchingTrainers.length > 0 ? matchingTrainers.map((trainer) => (
-              <Link key={trainer.id} to={`/trainer/${trainer.id}`} className="rounded-xl border border-slate-700/50 bg-surface-high/80 p-4 hover:border-primary">
+              <Link key={trainer.id} to={`/trainer/${trainer.slug || trainer.id}`} className="rounded-xl border border-slate-700/50 bg-surface-high/80 p-4 hover:border-primary">
                 <h3 className="font-bold">{trainer.name}</h3>
                 <p className="text-xs text-muted mt-1">{trainer.city} / {trainer.specialty}</p>
                 <p className="text-primary text-sm mt-3">PKR {trainer.price}</p>
               </Link>
             )) : (
-              <div className="md:col-span-3 text-muted">No exact match is live yet. Use discovery to browse nearby or online trainers.</div>
+              <div className="md:col-span-3 rounded-xl border border-primary/30 bg-primary/10 p-5">
+                <p className="font-semibold text-white">No exact match is live yet.</p>
+                <p className="mt-2 text-sm leading-6 text-slate-400">Use discovery to browse nearby or online trainers, or send your city and goal so Liftrz can match you manually.</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link to={discoverHref} className="rounded-full bg-primary px-5 py-2 text-xs font-bold text-white">Get matched</Link>
+                  <Link to="/register/trainer" className="rounded-full border border-slate-700/50 px-5 py-2 text-xs font-semibold text-slate-300">Apply as trainer</Link>
+                </div>
+              </div>
             )}
           </div>
         </Surface>
