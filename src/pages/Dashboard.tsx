@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Banknote, CheckCircle2, Clock, Eye, ImageIcon, Upload, X } from 'lucide-react';
+import { Banknote, CheckCircle2, Clock, Copy, Eye, ImageIcon, Upload, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../utils/api';
 import SEO from '../components/SEO';
@@ -12,6 +12,11 @@ import { HeroBlock, MetricCard, PageContainer, PageShell, Surface } from '../com
 import { getAreasForCity } from '../utils/areas';
 
 const money = (value: number) => `PKR ${Number(value || 0).toLocaleString()}`;
+const paymentAccount = {
+  bankName: 'nayapay',
+  accountNumber: '03214026075',
+  accountName: 'ibrahim shakeel'
+};
 
 export default function Dashboard() {
   const session = useSession();
@@ -551,6 +556,15 @@ export default function Dashboard() {
               </div>
 
               <div className="grid gap-3">
+                <div className="grid gap-2 rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm">
+                  <p className="text-sm font-semibold text-white">Featured placement payment account</p>
+                  <p className="text-slate-300">Bank name: <span className="font-semibold text-white">{paymentAccount.bankName}</span></p>
+                  <p className="text-slate-300">Account no: <span className="font-semibold text-white">{paymentAccount.accountNumber}</span></p>
+                  <p className="text-slate-300">Account name: <span className="font-semibold text-white">{paymentAccount.accountName}</span></p>
+                  <button type="button" onClick={() => navigator.clipboard.writeText(`${paymentAccount.bankName} / ${paymentAccount.accountNumber} / ${paymentAccount.accountName}`)} className="mt-2 inline-flex w-fit items-center gap-2 rounded-lg border border-primary/40 px-3 py-2 text-xs font-semibold text-primary">
+                    <Copy className="h-3.5 w-3.5" /> Copy account details
+                  </button>
+                </div>
                 <label className="grid gap-2 text-xs font-semibold text-slate-400">
                   Placement
                   <select value={featuredPlacement} onChange={(e) => setFeaturedPlacement(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white">
@@ -561,7 +575,7 @@ export default function Dashboard() {
                 </label>
                 <label className="grid gap-2 text-xs font-semibold text-slate-400">
                   Payment note or transaction reference
-                  <textarea value={featuredNote} onChange={(e) => setFeaturedNote(e.target.value)} rows={3} className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none" placeholder="JazzCash/EasyPaisa/bank reference, package duration, or admin note" />
+                  <textarea value={featuredNote} onChange={(e) => setFeaturedNote(e.target.value)} rows={3} className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none" placeholder="Nayapay transaction/reference ID, package duration, or admin note" />
                 </label>
                 <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-dashed border-slate-700/70 bg-surface-high/60 px-4 py-3 text-sm text-slate-300">
                   <span>{featuredReceiptImage ? 'Receipt uploaded' : uploadingFeaturedReceipt ? 'Uploading receipt...' : 'Upload payment receipt'}</span>
