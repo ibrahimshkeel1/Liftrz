@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+.git
+.npm-cache
+.vercel
+.env
+.env.*
+*.log
+.DS_Store

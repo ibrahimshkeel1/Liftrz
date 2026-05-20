@@ -1,0 +1,28 @@
+services:
+  liftrz:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: liftrz
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3010}:3010"
+    environment:
+      NODE_ENV: "production"
+      PORT: "3010"
+      CANONICAL_HOST: "${CANONICAL_HOST:-liftrz.com}"
+      CORS_ORIGIN: "${CORS_ORIGIN:-https://liftrz.com}"
+      APP_URL: "${APP_URL:-https://liftrz.com}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      SUPABASE_URL: "${SUPABASE_URL:-}"
+      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY:-}"
+      SUPABASE_STATE_TABLE: "${SUPABASE_STATE_TABLE:-app_state}"
+      LIFTRZ_AUTH_SECRET: "${LIFTRZ_AUTH_SECRET:-}"
+      RESEND_API_KEY: "${RESEND_API_KEY:-}"
+      FROM_EMAIL: "${FROM_EMAIL:-Liftrz <hey@liftrz.com>}"
+      Liftrz_SQLITE_PATH: "/data/Liftrz.sqlite"
+    volumes:
+      - liftrz-data:/data
+
+volumes:
+  liftrz-data:
