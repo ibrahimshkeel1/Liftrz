@@ -173,9 +173,10 @@ const ensureStorageBucket = async (bucket) => {
   });
 
   if (existing.ok) return;
-  if (existing.status !== 404) {
-    const details = await existing.text().catch(() => '');
-    throw new Error(`Storage bucket check failed: ${details || existing.statusText}`);
+  const existingDetails = await existing.text().catch(() => '');
+  const bucketMissing = existing.status === 404 || /bucket not found/i.test(existingDetails);
+  if (!bucketMissing) {
+    throw new Error(`Storage bucket check failed: ${existingDetails || existing.statusText}`);
   }
 
   const created = await fetch(`${baseUrl}/storage/v1/bucket`, {
