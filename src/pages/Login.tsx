@@ -71,7 +71,6 @@ export default function Login() {
               <div className="mt-6 flex flex-wrap gap-2">
                 <InfoPill className={role === 'client' ? 'border-primary text-primary' : ''}><Link to="/login/client">Client</Link></InfoPill>
                 <InfoPill className={role === 'trainer' ? 'border-primary text-primary' : ''}><Link to="/login/trainer">Trainer</Link></InfoPill>
-                <InfoPill className={role === 'admin' ? 'border-primary text-primary' : ''}><Link to="/login/admin">Admin</Link></InfoPill>
               </div>
             </Surface>
           }
@@ -98,7 +97,6 @@ export default function Login() {
             <div className="mt-6 grid gap-4">
               <InfoCard title="Client" text="Browse trainers, submit payment proof and track bookings inside one account." />
               <InfoCard title="Trainer" text="Manage inquiries, packages, revenue and payouts from the same verified workspace." />
-              <InfoCard title="Admin" text="Approve trainers, verify payments and control commission-sensitive flows." />
             </div>
             <div className="mt-8 text-sm text-slate-400">
               Need an account?{' '}

@@ -25,7 +25,7 @@ export default function Layout({ children }: LayoutProps) {
     { icon: CalendarCheck, label: 'Bookings', path: '/client/dashboard', public: false },
     { icon: UserPlus, label: 'Join', path: '/register/trainer', public: true },
     { icon: BarChart2, label: 'Trainer', path: '/trainer/dashboard', public: false },
-    { icon: ShieldCheck, label: 'Admin', path: '/admin', public: false },
+    ...(session?.user.role === 'admin' ? [{ icon: ShieldCheck, label: 'Admin', path: '/admin', public: false }] : []),
   ];
 
   const desktopLinks = [
