@@ -167,17 +167,6 @@ const storageHeaders = (extra = {}) => ({
 
 const ensureStorageBucket = async (bucket) => {
   const baseUrl = supabaseUrl;
-  const bucketUrl = `${baseUrl}/storage/v1/bucket/${bucket}`;
-  const existing = await fetch(bucketUrl, {
-    headers: storageHeaders()
-  });
-
-  if (existing.ok) return;
-  if (existing.status !== 404) {
-    const details = await existing.text().catch(() => '');
-    throw new Error(`Storage bucket check failed: ${details || existing.statusText}`);
-  }
-
   const created = await fetch(`${baseUrl}/storage/v1/bucket`, {
     method: 'POST',
     headers: storageHeaders({ 'Content-Type': 'application/json' }),
