@@ -21,7 +21,7 @@ export default function RefundPolicy() {
           <p className="text-slate-400">Disputes must be filed within 7 days of the scheduled session. Liftrz admin will review evidence from both parties and issue a decision within 5 business days.</p>
 
           <h3 className="mt-6 text-xl font-semibold text-white">4. Refund Method</h3>
-          <p className="text-slate-400">Refunds are processed to the original payment method. Bank transfers may take 5-7 business days. Mobile wallet refunds (JazzCash, EasyPaisa) typically process within 24 hours.</p>
+          <p className="text-slate-400">Refunds are processed manually after admin review. Nayapay/mobile wallet refunds typically process within 24 hours, while bank transfers may take 5-7 business days.</p>
 
           <h3 className="mt-6 text-xl font-semibold text-white">5. Package Expiration</h3>
           <p className="text-slate-400">Training packages expire 90 days from purchase if unused. No refunds for expired packages. Extensions may be granted for medical reasons with documentation.</p>

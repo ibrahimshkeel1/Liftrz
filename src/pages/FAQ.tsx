@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     question: 'How does payment work?',
-    answer: 'Submit payment proof (bank transfer, JazzCash, or EasyPaisa receipt) through the platform. Once admin verifies your payment, direct trainer contact unlocks automatically.'
+    answer: 'Pay the Liftrz Nayapay account shown at checkout, then submit a screenshot or transaction ID through the platform. Once admin verifies your payment, direct trainer contact unlocks automatically.'
   },
   {
     question: 'What if I am not satisfied with my trainer?',

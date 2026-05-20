@@ -1634,10 +1634,12 @@ app.patch('/api/admin/payments/:id/verify', requireRole('admin'), route(async (r
   const bookingIndex = db.bookings.findIndex((booking) => booking.id === payment.bookingId);
   const leadIndex = db.leads.findIndex((lead) => lead.bookingId === payment.bookingId);
   const status = req.body.status || 'verified';
+  const reviewNote = sanitizeString(req.body.reviewNote, 500);
 
   db.payments[paymentIndex] = {
     ...payment,
     status,
+    reviewNote,
     verifiedBy: req.currentUser.id,
     verifiedAt: new Date().toISOString()
   };
@@ -1672,6 +1674,7 @@ app.patch('/api/admin/payments/:id/verify', requireRole('admin'), route(async (r
       contactUnlocked: status === 'verified',
       chatStatus: status === 'verified' ? 'open' : 'locked',
       chatOpenedAt,
+      paymentReviewNote: reviewNote,
       messages: chatMessages,
       verifiedAt: status === 'verified' ? now : undefined
     };
@@ -1683,7 +1686,8 @@ app.patch('/api/admin/payments/:id/verify', requireRole('admin'), route(async (r
         paymentStatus: status,
         contactUnlocked: status === 'verified',
         chatStatus: status === 'verified' ? 'open' : 'locked',
-        chatOpenedAt
+        chatOpenedAt,
+        paymentReviewNote: reviewNote
       };
     }
 
@@ -1787,7 +1791,7 @@ app.patch('/api/admin/disputes/:id', requireRole('admin'), route(async (req, res
   res.json(db.disputes[index]);
 }));
 
-app.get('/api/health/storage', route(async (_req, res) => {
+app.get('/api/health/storage', requireRole('admin'), route(async (_req, res) => {
   const db = await readDB();
   res.json({
     ok: true,
@@ -1798,7 +1802,7 @@ app.get('/api/health/storage', route(async (_req, res) => {
   });
 }));
 
-app.post('/api/uploads', route(async (req, res) => {
+app.post('/api/uploads', requireAuth, route(async (req, res) => {
   const upload = await uploadObject({
     bucket: req.body.bucket || 'Liftrz-private',
     folder: req.body.folder || 'receipts',

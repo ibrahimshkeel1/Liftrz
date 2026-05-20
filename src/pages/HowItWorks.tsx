@@ -25,7 +25,7 @@ const steps = [
   {
     number: '04',
     title: 'Secure payment',
-    description: 'Once you are ready to book, submit payment proof via bank transfer, JazzCash, or EasyPaisa. Your payment is held securely until admin verifies the receipt.',
+    description: 'Once you are ready to book, pay the Liftrz Nayapay account and submit a screenshot or transaction ID. Your booking stays pending until admin verifies the proof.',
     icon: Wallet
   },
   {
@@ -99,8 +99,8 @@ export default function HowItWorks() {
               <h2 className="text-xl font-bold text-white">How payment works</h2>
               <ul className="mt-4 space-y-2 text-sm text-slate-400">
                 <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> No payment required to send an inquiry</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Pay via bank transfer, JazzCash, or EasyPaisa</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Upload receipt screenshot to Liftrz</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Pay the Liftrz Nayapay account shown at checkout</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Upload a receipt screenshot or enter the transaction ID</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Admin verifies within 24 hours</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Trainer contact unlocks automatically after verification</li>
               </ul>

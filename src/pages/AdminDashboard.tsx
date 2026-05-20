@@ -49,6 +49,7 @@ export default function AdminDashboard() {
   const [viewReceipt, setViewReceipt] = useState<string | null>(null);
   const [uploadingPayoutId, setUploadingPayoutId] = useState('');
   const [selectedTrainerId, setSelectedTrainerId] = useState('');
+  const [paymentFilter, setPaymentFilter] = useState<'pending_verification' | 'verified' | 'rejected' | 'all'>('pending_verification');
 
   const load = async () => {
     try {
@@ -181,10 +182,11 @@ export default function AdminDashboard() {
   };
 
   const verifyPayment = async (id: string, status = 'verified') => {
+    const reviewNote = status === 'rejected' ? window.prompt('Why is this payment rejected?') || '' : '';
     setActionId(id);
     setActionError('');
     try {
-      await api.verifyPayment(id, { status });
+      await api.verifyPayment(id, { status, reviewNote });
       await load();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Failed to verify payment');
@@ -248,6 +250,7 @@ export default function AdminDashboard() {
   if (error) return <div className="px-6 py-20 text-center text-red-400">{error}</div>;
 
   const pendingPayments = payments.filter((payment) => payment.status === 'pending_verification');
+  const visiblePayments = paymentFilter === 'all' ? payments : payments.filter((payment) => payment.status === paymentFilter);
   const pendingTrainers = trainers.filter((trainer) => trainer.verificationStatus !== 'approved');
   const pendingFeatured = trainers.filter((trainer) => trainer.featuredStatus === 'requested');
   const pendingSubmissions = trainers.filter((trainer) => ['identityStatus', 'profileAssetsStatus', 'payoutStatus', 'certificationsStatus'].some((key) => trainer[key] === 'pending_review')).length + protocols.filter((protocol) => protocol.status === 'pending_review').length;
@@ -544,8 +547,25 @@ export default function AdminDashboard() {
 
         {activeTab === 'payments' && (
           <Panel className="mt-8" title="Payment verification">
-            {payments.length === 0 && <EmptyRow text="No payments found." />}
-            {payments.map((payment) => (
+            <div className="flex flex-wrap gap-2 border-b border-slate-700/50 px-5 py-4">
+              {[
+                ['pending_verification', 'Pending'],
+                ['verified', 'Verified'],
+                ['rejected', 'Rejected'],
+                ['all', 'All']
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setPaymentFilter(value as typeof paymentFilter)}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${paymentFilter === value ? 'border-primary bg-primary/10 text-primary' : 'border-slate-700/50 text-slate-400 hover:text-white'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {visiblePayments.length === 0 && <EmptyRow text="No payments found." />}
+            {visiblePayments.map((payment) => (
               <div key={payment.id}>
                 <Row>
                 <div>
@@ -557,7 +577,15 @@ export default function AdminDashboard() {
                     <p>Name: <span className="text-slate-200">{payment.accountName || 'N/A'}</span></p>
                     <p>Transaction ID: <span className="text-slate-200">{payment.transactionId || 'Not provided'}</span></p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText([payment.bankName, payment.accountNumber, payment.accountName, payment.transactionId].filter(Boolean).join(' / '))}
+                    className="mt-3 inline-flex items-center gap-1 rounded-lg border border-slate-700/50 px-2 py-1 text-xs text-slate-300 hover:text-white"
+                  >
+                    <Copy className="h-3.5 w-3.5" /> Copy proof details
+                  </button>
                   <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">{payment.status}</p>
+                  {payment.reviewNote && <p className="mt-2 text-xs text-rose-200">Review note: {payment.reviewNote}</p>}
                   {payment.receiptImage && (
                     <button type="button" onClick={() => setViewReceipt(payment.receiptImage)} className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
                       <Eye className="h-3.5 w-3.5" /> View receipt

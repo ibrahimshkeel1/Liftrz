@@ -18,7 +18,7 @@ export default function Privacy() {
           <p className="text-slate-400">Your data is used to match clients with trainers, process payments, send notifications, and improve our platform. We never sell your personal information.</p>
 
           <h3 className="mt-6 text-xl font-semibold text-white">3. Data Sharing</h3>
-          <p className="text-slate-400">Client contact details are shared with trainers only after payment verification. Trainer contact details are hidden until booking is confirmed. We share data with payment processors (Stripe, JazzCash) as necessary.</p>
+          <p className="text-slate-400">Client contact details are shared with trainers only after payment verification. Trainer contact details are hidden until booking is confirmed. Payment proof is reviewed manually by Liftrz admin.</p>
 
           <h3 className="mt-6 text-xl font-semibold text-white">4. Security</h3>
           <p className="text-slate-400">We use industry-standard encryption, secure authentication, and regular security audits. Passwords are hashed with scrypt. Sessions use signed JWT tokens.</p>
