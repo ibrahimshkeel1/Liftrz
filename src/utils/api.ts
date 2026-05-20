@@ -77,6 +77,7 @@ export const api = {
   getAdminStats: () => request('/admin/stats'),
   getAdminNotifications: () => request('/admin/notifications'),
   getAdminChats: () => request('/admin/chats'),
+  moderateBookingMessage: (bookingId: string, messageId: string, data: any) => request(`/admin/bookings/${bookingId}/messages/${messageId}`, { method: 'PATCH', body: JSON.stringify(data) }),
   getAdminTrainers: () => request('/admin/trainers'),
   updateTrainerProfileReview: (id: string, data: any) => request(`/admin/trainers/${id}/profile-review`, { method: 'PATCH', body: JSON.stringify(data) }),
   getAdminProtocols: () => request('/admin/protocols'),

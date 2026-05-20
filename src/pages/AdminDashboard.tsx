@@ -84,6 +84,19 @@ export default function AdminDashboard() {
     load();
   }, []);
 
+  useEffect(() => {
+    if (activeTab !== 'chats') return undefined;
+    const interval = window.setInterval(async () => {
+      try {
+        const chatsData = await api.getAdminChats();
+        setChats(chatsData);
+      } catch {
+        // Keep the current monitor visible if a background refresh fails.
+      }
+    }, 15000);
+    return () => window.clearInterval(interval);
+  }, [activeTab]);
+
   const approveTrainer = async (id?: string, verificationStatus = 'approved', commissionRate?: number) => {
     if (!id) {
       setActionError('Missing trainer id for this action.');
@@ -630,7 +643,7 @@ export default function AdminDashboard() {
             <Panel title="Conversation monitor">
               {selectedChat ? (
                 <div className="p-5">
-                  <BookingChatPanel booking={selectedChat} title={`${selectedChat.clientName} / ${selectedChat.trainerName}`} readOnly />
+                  <BookingChatPanel booking={selectedChat} title={`${selectedChat.clientName} / ${selectedChat.trainerName}`} readOnly onModerated={load} />
                 </div>
               ) : (
                 <EmptyRow text="Select a chat to monitor messages." />

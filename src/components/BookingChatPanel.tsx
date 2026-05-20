@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { FileUp, LockKeyhole, MessageCircle, Paperclip, RefreshCw, Send, ShieldCheck, X } from 'lucide-react';
+import { EyeOff, FileText, FileUp, LockKeyhole, MessageCircle, Paperclip, RefreshCw, Send, ShieldCheck, X } from 'lucide-react';
 import { api } from '../utils/api';
 import { useSession } from '../utils/session';
 
@@ -9,9 +9,10 @@ interface BookingChatPanelProps {
   title?: string;
   readOnly?: boolean;
   onSent?: () => void;
+  onModerated?: () => void;
 }
 
-export default function BookingChatPanel({ booking, title = 'Secure chat', readOnly = false, onSent }: BookingChatPanelProps) {
+export default function BookingChatPanel({ booking, title = 'Secure chat', readOnly = false, onSent, onModerated }: BookingChatPanelProps) {
   const session = useSession();
   const [chatBooking, setChatBooking] = useState<any>(booking);
   const [messages, setMessages] = useState<any[]>(booking?.messages || []);
@@ -57,7 +58,7 @@ export default function BookingChatPanel({ booking, title = 'Secure chat', readO
   }, [booking?.id]);
 
   useEffect(() => {
-    if (!chatOpen || readOnly) return undefined;
+    if (!chatOpen) return undefined;
     const interval = window.setInterval(() => {
       void loadMessagesSilently();
     }, 15000);
@@ -69,9 +70,28 @@ export default function BookingChatPanel({ booking, title = 'Secure chat', readO
   }, [messages.length]);
 
   const detectContactLeak = (messageText: string) => {
-    const phoneRegex = /(\+?92[\s\-]?\d{3}[\s\-]?\d{7}|\+?92[\s\-]?\d{10}|03[\d\s\-]{9,11})/i;
-    const urlRegex = /(https?:\/\/[^\s]+|wa\.me\/[^\s]+|whatsapp\.com\/[^\s]+)/i;
-    return phoneRegex.test(messageText) || urlRegex.test(messageText);
+    const compact = messageText.toLowerCase().replace(/[\s()._\-]/g, '');
+    const phoneRegex = /((\+?92|0092)3\d{9}|03\d{9}|\b3\d{9}\b)/i;
+    const urlRegex = /\b(https?:\/\/|www\.|wa\.me\/|whatsapp\.com\/|t\.me\/|telegram\.me\/|instagram\.com\/|facebook\.com\/|fb\.com\/)[^\s]+/i;
+    return phoneRegex.test(compact) || urlRegex.test(messageText);
+  };
+
+  const moderateMessage = async (messageId: string, currentlyHidden: boolean) => {
+    if (session?.user.role !== 'admin') return;
+    const moderationReason = currentlyHidden ? '' : window.prompt('Reason for hiding this message?') || '';
+    setStatus('updating moderation');
+    try {
+      const data = await api.moderateBookingMessage(booking.id, messageId, {
+        moderationStatus: currentlyHidden ? 'visible' : 'hidden',
+        moderationReason
+      });
+      setChatBooking(data.booking);
+      setMessages(data.messages || []);
+      setStatus('');
+      onModerated?.();
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Failed to update message');
+    }
   };
 
   const sendMessage = async (event: FormEvent) => {
@@ -170,30 +190,56 @@ export default function BookingChatPanel({ booking, title = 'Secure chat', readO
           {messages.map((message) => {
             const ownMessage = session?.user.id === message.senderId;
             const systemMessage = message.senderRole === 'system' || message.type === 'system';
+            const hiddenMessage = message.moderationStatus === 'hidden' || message.hiddenFromUser;
+            const adminViewing = session?.user.role === 'admin';
             return (
               <div key={message.id} className={`flex ${systemMessage ? 'justify-center' : ownMessage ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[82%] rounded-xl px-4 py-3 ${
                   systemMessage
                     ? 'border border-primary/25 bg-primary/10 text-primary'
+                    : hiddenMessage && !adminViewing
+                      ? 'border border-slate-700/50 bg-surface-high/60 text-slate-400'
                     : ownMessage
                       ? 'bg-primary text-white'
                       : 'border border-slate-700/50 bg-surface-high text-white'
                 }`}>
                   <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium opacity-70">
                     {systemMessage && <ShieldCheck className="h-3.5 w-3.5" />}
+                    {hiddenMessage && <EyeOff className="h-3.5 w-3.5" />}
                     <span>{message.senderName || message.senderRole}</span>
                     <span>{new Date(message.createdAt).toLocaleString()}</span>
+                    {hiddenMessage && adminViewing && <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-rose-200">Hidden</span>}
                   </div>
-                  <p className="whitespace-pre-wrap text-sm leading-6">{message.text}</p>
+                  <p className="whitespace-pre-wrap text-sm leading-6">{hiddenMessage && !adminViewing ? 'Message hidden by admin.' : message.text}</p>
                   {Array.isArray(message.attachments) && message.attachments.length > 0 && (
                     <div className="mt-3 grid gap-2">
-                      {message.attachments.map((item: any, index: number) => (
-                        <a key={`${message.id}-${index}`} href={item.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-black/5 px-3 py-2 text-xs font-semibold">
-                          <Paperclip className="h-3.5 w-3.5" />
-                          <span className="truncate">{item.name}</span>
-                        </a>
-                      ))}
+                      {message.attachments.map((item: any, index: number) => {
+                        const imageAttachment = String(item.type || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(String(item.name || ''));
+                        return (
+                          <a key={`${message.id}-${index}`} href={item.url} target="_blank" rel="noreferrer" className="group overflow-hidden rounded-2xl border border-black/10 bg-black/5 text-xs font-semibold">
+                            {imageAttachment ? (
+                              <img src={item.url} alt={item.name || 'Chat attachment'} className="max-h-56 w-full object-cover transition group-hover:opacity-90" loading="lazy" />
+                            ) : null}
+                            <span className="flex items-center gap-2 px-3 py-2">
+                              {imageAttachment ? <Paperclip className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+                              <span className="truncate">{item.name}</span>
+                            </span>
+                          </a>
+                        );
+                      })}
                     </div>
+                  )}
+                  {adminViewing && message.moderationReason && (
+                    <p className="mt-2 rounded-xl bg-rose-500/10 px-3 py-2 text-xs text-rose-100">Reason: {message.moderationReason}</p>
+                  )}
+                  {adminViewing && !systemMessage && (
+                    <button
+                      type="button"
+                      onClick={() => moderateMessage(message.id, hiddenMessage)}
+                      className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-600 px-3 py-1.5 text-[11px] font-semibold text-slate-200"
+                    >
+                      <EyeOff className="h-3.5 w-3.5" /> {hiddenMessage ? 'Unhide message' : 'Hide message'}
+                    </button>
                   )}
                 </div>
               </div>

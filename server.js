@@ -112,6 +112,18 @@ const sanitizeString = (value, maxLength = 500) => {
   return value.trim().slice(0, maxLength);
 };
 
+const containsOffPlatformContact = (value = '') => {
+  const text = String(value).toLowerCase();
+  const compact = text.replace(/[\s()._\-]/g, '');
+  const phoneRegexes = [
+    /(?:\+?92|0092)3\d{9}/,
+    /03\d{9}/,
+    /\b3\d{9}\b/
+  ];
+  const urlRegex = /\b(?:https?:\/\/|www\.|wa\.me\/|whatsapp\.com\/|t\.me\/|telegram\.me\/|instagram\.com\/|facebook\.com\/|fb\.com\/)[^\s]+/i;
+  return urlRegex.test(text) || phoneRegexes.some((regex) => regex.test(compact));
+};
+
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const validatePhone = (phone) => /^[\+\d\s\-]{7,20}$/.test(phone);
 
@@ -325,10 +337,25 @@ const canChatBooking = (booking) => (
 
 const bookingMessages = (booking) => Array.isArray(booking?.messages) ? booking.messages : [];
 
+const chatMessagesForUser = (booking, user) => bookingMessages(booking).map((message) => {
+  if (user?.role === 'admin' || message.moderationStatus !== 'hidden') return message;
+  return {
+    ...message,
+    text: 'Message hidden by admin.',
+    attachments: [],
+    hiddenFromUser: true
+  };
+});
+
+const bookingForUser = (booking, user) => ({
+  ...booking,
+  messages: chatMessagesForUser(booking, user)
+});
+
 const bookingReadState = (booking) => (booking?.readState && typeof booking.readState === 'object' ? booking.readState : {});
 
-const bookingChatSummary = (booking, db) => {
-  const messages = bookingMessages(booking);
+const bookingChatSummary = (booking, db, user) => {
+  const messages = user ? chatMessagesForUser(booking, user) : bookingMessages(booking);
   const latestMessage = messages[messages.length - 1] || null;
   return {
     id: booking.id,
@@ -1088,7 +1115,7 @@ app.get('/api/trainer/:id/bookings', requireAuth, route(async (req, res) => {
     return res.status(403).json({ message: 'Access denied' });
   }
   const db = await readDB();
-  res.json(db.bookings.filter((booking) => booking.trainerId === req.params.id));
+  res.json(db.bookings.filter((booking) => booking.trainerId === req.params.id).map((booking) => bookingForUser(booking, req.currentUser)));
 }));
 
 app.get('/api/trainer/:id/payouts', requireAuth, route(async (req, res) => {
@@ -1104,7 +1131,7 @@ app.get('/api/client/:id/bookings', requireAuth, route(async (req, res) => {
     return res.status(403).json({ message: 'Access denied' });
   }
   const db = await readDB();
-  res.json(db.bookings.filter((booking) => booking.clientId === req.params.id));
+  res.json(db.bookings.filter((booking) => booking.clientId === req.params.id).map((booking) => bookingForUser(booking, req.currentUser)));
 }));
 
 app.get('/api/bookings/:id/messages', requireAuth, route(async (req, res) => {
@@ -1129,8 +1156,8 @@ app.get('/api/bookings/:id/messages', requireAuth, route(async (req, res) => {
   }
 
   res.json({
-    booking: bookingChatSummary(db.bookings[bookingIndex] || booking, db),
-    messages: bookingMessages(db.bookings[bookingIndex] || booking)
+    booking: bookingChatSummary(db.bookings[bookingIndex] || booking, db, req.currentUser),
+    messages: chatMessagesForUser(db.bookings[bookingIndex] || booking, req.currentUser)
   });
 }));
 
@@ -1151,6 +1178,9 @@ app.post('/api/bookings/:id/messages', requireAuth, route(async (req, res) => {
   }
 
   const text = String(req.body.text || '').trim();
+  if (containsOffPlatformContact(text)) {
+    return res.status(400).json({ message: 'Liftrz policy: do not share phone numbers or external links in chat.' });
+  }
   const attachments = Array.isArray(req.body.attachments)
     ? req.body.attachments.filter((attachment) => (
       attachment
@@ -1206,7 +1236,7 @@ app.post('/api/bookings/:id/messages', requireAuth, route(async (req, res) => {
     });
   }
 
-  res.status(201).json({ message, messages: db.bookings[bookingIndex].messages });
+  res.status(201).json({ message, messages: chatMessagesForUser(db.bookings[bookingIndex], req.currentUser) });
 }));
 
 app.post('/api/bookings', route(async (req, res) => {
@@ -1325,6 +1355,37 @@ app.get('/api/admin/chats', requireRole('admin'), route(async (_req, res) => {
     .map((booking) => bookingChatSummary(booking, db))
     .sort((a, b) => new Date(b.latestMessageAt || 0).getTime() - new Date(a.latestMessageAt || 0).getTime());
   res.json(chats);
+}));
+
+app.patch('/api/admin/bookings/:bookingId/messages/:messageId', requireRole('admin'), route(async (req, res) => {
+  const db = await readDB();
+  const bookingIndex = db.bookings.findIndex((booking) => booking.id === req.params.bookingId);
+  if (bookingIndex === -1) return res.status(404).json({ message: 'Booking not found' });
+
+  const messages = bookingMessages(db.bookings[bookingIndex]);
+  const messageIndex = messages.findIndex((message) => message.id === req.params.messageId);
+  if (messageIndex === -1) return res.status(404).json({ message: 'Message not found' });
+
+  const moderationStatus = req.body.moderationStatus === 'visible' ? 'visible' : 'hidden';
+  const nextMessages = messages.map((message, index) => index === messageIndex
+    ? {
+        ...message,
+        moderationStatus,
+        moderationReason: moderationStatus === 'hidden' ? sanitizeString(req.body.moderationReason, 500) : '',
+        moderatedAt: new Date().toISOString(),
+        moderatedBy: req.currentUser.id
+      }
+    : message);
+
+  db.bookings[bookingIndex] = {
+    ...db.bookings[bookingIndex],
+    messages: nextMessages
+  };
+  await writeDB(db);
+  res.json({
+    booking: bookingChatSummary(db.bookings[bookingIndex], db, req.currentUser),
+    messages: chatMessagesForUser(db.bookings[bookingIndex], req.currentUser)
+  });
 }));
 
 app.delete('/api/admin/bookings/:id', requireRole('admin'), route(async (req, res) => {
