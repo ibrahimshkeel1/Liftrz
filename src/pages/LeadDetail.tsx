@@ -330,6 +330,7 @@ export default function LeadDetail() {
                 <SectionTitle title="Payment verification" description="Only the admin backend can approve receipt proof and unlock booked workflow." />
                 <div className="grid gap-5">
                   <InfoRow icon={<WalletCards className="h-4 w-4 text-primary" />} label="Method" value={selectedLead.paymentMethod || 'Manual transfer'} />
+                  <InfoRow icon={<WalletCards className="h-4 w-4 text-primary" />} label="Transaction ID" value={selectedLead.transactionId || 'Not provided'} />
                   {selectedLead.receiptImage ? (
                     <img src={selectedLead.receiptImage} alt="Uploaded receipt" className="max-h-80 w-full rounded-2xl border border-slate-700/50 bg-black object-contain" />
                   ) : (

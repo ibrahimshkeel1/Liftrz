@@ -10,6 +10,11 @@ import { useToast } from '../components/ToastProvider';
 import { HeroBlock, InfoPill, MetricCard, PageContainer, PageShell, SectionTitle, Surface } from '../components/premium';
 
 const money = (value: number | string) => `PKR ${Number(String(value || 0).replace(/,/g, '')).toLocaleString()}`;
+const paymentAccount = {
+  bankName: 'nayapay',
+  accountNumber: '03214026075',
+  accountName: 'ibrahim shakeel'
+};
 
 export default function TrainerProfile() {
   const { id } = useParams();
@@ -35,6 +40,11 @@ export default function TrainerProfile() {
   const [imgError, setImgError] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, text: '' });
   const [reviewStatus, setReviewStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [paymentForm, setPaymentForm] = useState({
+    receiptImage: '',
+    transactionId: ''
+  });
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'uploading' | 'submitting' | 'success'>('idle');
   const clientSession = session?.user.role === 'client' ? session.user : null;
 
   const initials = trainer?.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'TR';
@@ -117,6 +127,62 @@ export default function TrainerProfile() {
       const msg = error instanceof Error ? error.message : 'Failed to submit review';
       setReviewStatus('idle');
       toast.addToast(msg, 'error');
+    }
+  };
+
+  const uploadReceipt = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setPaymentStatus('uploading');
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = async () => {
+        const upload = await api.uploadFile({
+          bucket: 'Liftrz-private',
+          folder: 'receipts',
+          fileName: `client-payment-${trainer.id}-${Date.now()}.${file.name.split('.').pop()}`,
+          dataUrl: reader.result as string
+        });
+        setPaymentForm((current) => ({ ...current, receiptImage: upload.url }));
+        setPaymentStatus('idle');
+        toast.addToast('Payment screenshot uploaded', 'success');
+      };
+    } catch (error) {
+      setPaymentStatus('idle');
+      toast.addToast(error instanceof Error ? error.message : 'Failed to upload receipt', 'error');
+    }
+  };
+
+  const submitPaidBooking = async () => {
+    if (!trainer || !selectedPackage || !clientSession) return;
+    if (!paymentForm.receiptImage && !paymentForm.transactionId.trim()) {
+      toast.addToast('Upload a payment screenshot or enter a transaction ID.', 'error');
+      return;
+    }
+
+    setPaymentStatus('submitting');
+    try {
+      await api.createBooking({
+        trainerId: trainer.id,
+        protocolId: selectedPackage.id,
+        amount: selectedPackage.price,
+        paymentMethod: paymentAccount.bankName,
+        receiptImage: paymentForm.receiptImage,
+        transactionId: paymentForm.transactionId.trim(),
+        bankName: paymentAccount.bankName,
+        accountNumber: paymentAccount.accountNumber,
+        accountName: paymentAccount.accountName,
+        clientName: inquiryForm.name,
+        clientEmail: inquiryForm.email,
+        clientPhone: inquiryForm.phone
+      });
+      setPaymentStatus('success');
+      toast.addToast('Payment proof submitted. Admin will verify it.', 'success');
+      navigate('/client/dashboard');
+    } catch (error) {
+      setPaymentStatus('idle');
+      toast.addToast(error instanceof Error ? error.message : 'Failed to submit payment proof', 'error');
     }
   };
 
@@ -420,6 +486,35 @@ export default function TrainerProfile() {
                     {inquiryStatus === 'loading' ? 'Sending...' : buddyMode ? 'Send buddy inquiry' : 'Send free inquiry'}
                   </button>
                   <p className="text-center text-xs text-slate-500">No payment required. Trainer contact stays protected until you both agree to book.</p>
+
+                  {selectedPackage && (
+                    <div className="mt-2 grid gap-4 rounded-2xl border border-slate-700/50 bg-surface-high/50 p-4">
+                      <div>
+                        <p className="text-sm font-semibold text-white">Ready to pay for this package?</p>
+                        <p className="mt-1 text-xs leading-6 text-slate-400">Send payment to the account below, then upload a screenshot or enter the transaction ID. Admin will verify it before trainer contact unlocks.</p>
+                      </div>
+                      <div className="grid gap-2 rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm">
+                        <p className="text-slate-300">Bank name: <span className="font-semibold text-white">{paymentAccount.bankName}</span></p>
+                        <p className="text-slate-300">Account no: <span className="font-semibold text-white">{paymentAccount.accountNumber}</span></p>
+                        <p className="text-slate-300">Account name: <span className="font-semibold text-white">{paymentAccount.accountName}</span></p>
+                        <button type="button" onClick={() => navigator.clipboard.writeText(`${paymentAccount.bankName} / ${paymentAccount.accountNumber} / ${paymentAccount.accountName}`)} className="mt-2 inline-flex w-fit items-center gap-2 rounded-lg border border-primary/40 px-3 py-2 text-xs font-semibold text-primary">
+                          <Copy className="h-3.5 w-3.5" /> Copy account details
+                        </button>
+                      </div>
+                      <label className="grid gap-2">
+                        <span className="text-xs font-medium text-slate-500">Transaction ID</span>
+                        <input value={paymentForm.transactionId} onChange={(event) => setPaymentForm({ ...paymentForm, transactionId: event.target.value })} placeholder="Paste Nayapay transaction/reference ID" className="rounded-xl border border-slate-700/50 bg-surface-high p-3.5 text-sm text-white outline-none placeholder:text-slate-600" />
+                      </label>
+                      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-dashed border-slate-700/70 bg-surface px-4 py-3 text-sm text-slate-300">
+                        <span>{paymentForm.receiptImage ? 'Screenshot uploaded' : paymentStatus === 'uploading' ? 'Uploading screenshot...' : 'Upload payment screenshot'}</span>
+                        <Upload className="h-4 w-4 text-primary" />
+                        <input type="file" accept="image/*" className="hidden" onChange={uploadReceipt} />
+                      </label>
+                      <button type="button" disabled={paymentStatus === 'uploading' || paymentStatus === 'submitting'} onClick={submitPaidBooking} className="rounded-xl bg-success px-5 py-3 text-sm font-bold text-white disabled:opacity-50">
+                        {paymentStatus === 'submitting' ? 'Submitting proof...' : 'Submit payment for admin approval'}
+                      </button>
+                    </div>
+                  )}
                 </form>
               )}
             </Surface>

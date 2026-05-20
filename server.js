@@ -1214,7 +1214,10 @@ app.post('/api/bookings', route(async (req, res) => {
   const trainer = db.trainers.find((item) => item.id === req.body.trainerId);
   const protocol = db.protocols.find((item) => item.id === req.body.protocolId);
   if (!trainer || !protocol) return res.status(404).json({ message: 'Trainer or package not found' });
-  if (!req.body.receiptImage) return res.status(400).json({ message: 'Payment proof upload is required' });
+  const transactionId = sanitizeString(req.body.transactionId, 160);
+  if (!req.body.receiptImage && !transactionId) {
+    return res.status(400).json({ message: 'Upload a payment screenshot or enter a transaction ID' });
+  }
 
   const grossAmount = parseAmount(req.body.amount || protocol.price);
   const commissionRate = Number(trainer.commissionRate ?? db.platformSettings.commissionRate ?? 0.15);
@@ -1255,7 +1258,11 @@ app.post('/api/bookings', route(async (req, res) => {
     bookingId,
     method: req.body.paymentMethod || 'Bank Transfer',
     amount: grossAmount,
-    receiptImage: req.body.receiptImage,
+    receiptImage: req.body.receiptImage || '',
+    transactionId,
+    accountName: sanitizeString(req.body.accountName || 'ibrahim shakeel', 120),
+    accountNumber: sanitizeString(req.body.accountNumber || '03214026075', 80),
+    bankName: sanitizeString(req.body.bankName || 'nayapay', 120),
     status: 'pending_verification',
     createdAt: new Date().toISOString()
   };
@@ -1272,6 +1279,7 @@ app.post('/api/bookings', route(async (req, res) => {
     clientPhone,
     paymentMethod: payment.method,
     receiptImage: payment.receiptImage,
+    transactionId: payment.transactionId,
     goal: protocol.title,
     message: `Paid booking submitted for ${protocol.title}. Contact remains locked until admin verifies payment.`,
     status: 'pending_verification',

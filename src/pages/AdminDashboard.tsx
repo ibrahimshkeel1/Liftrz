@@ -551,11 +551,17 @@ export default function AdminDashboard() {
                 <div>
                   <h3 className="font-semibold text-white">{money(payment.amount)}</h3>
                   <p className="mt-1 text-xs text-slate-400">{payment.method} / {payment.bookingId}</p>
+                  <div className="mt-3 grid gap-1 text-xs text-slate-400">
+                    <p>Bank: <span className="text-slate-200">{payment.bankName || 'N/A'}</span></p>
+                    <p>Account: <span className="text-slate-200">{payment.accountNumber || 'N/A'}</span></p>
+                    <p>Name: <span className="text-slate-200">{payment.accountName || 'N/A'}</span></p>
+                    <p>Transaction ID: <span className="text-slate-200">{payment.transactionId || 'Not provided'}</span></p>
+                  </div>
                   <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">{payment.status}</p>
                   {payment.receiptImage && (
-                    <a href={payment.receiptImage} target="_blank" rel="noreferrer" className="mt-3 inline-flex text-xs font-medium text-primary">
-                      View receipt
-                    </a>
+                    <button type="button" onClick={() => setViewReceipt(payment.receiptImage)} className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
+                      <Eye className="h-3.5 w-3.5" /> View receipt
+                    </button>
                   )}
                 </div>
                 {payment.status === 'pending_verification' ? (
@@ -857,8 +863,8 @@ function ImagePreview({ src, label }: { src?: string; label: string }) {
   if (!src) return <div className="rounded-xl border border-slate-700/50 p-4 text-xs text-slate-500">{label}: not uploaded</div>;
   return (
     <a href={src} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-slate-700/50">
-      <img src={src} alt={label} className="aspect-video w-full object-cover" />
-      <p className="px-3 py-2 text-xs text-slate-300">{label}</p>
+      <img src={src} alt={label} className="aspect-video w-full bg-black object-contain" />
+      <p className="px-3 py-2 text-xs text-slate-300">{label} - open full size</p>
     </a>
   );
 }
