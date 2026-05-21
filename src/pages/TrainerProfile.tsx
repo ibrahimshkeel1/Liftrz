@@ -207,7 +207,13 @@ export default function TrainerProfile() {
   }
 
   const availableSlots = Math.max(Number(trainer.capacity || 0) - Number(trainer.activeClients || 0), 0);
-  const monthlyPrice = Math.round(Number(String(trainer.price || 0).replace(/,/g, '')) * 12);
+  const approvedPackagePrices = protocols
+    .filter((protocol) => protocol.status === 'approved' || !protocol.status)
+    .map((protocol) => Number(String(protocol.price || 0).replace(/,/g, '')))
+    .filter((price) => price > 0);
+  const monthlyPrice = approvedPackagePrices.length
+    ? Math.min(...approvedPackagePrices)
+    : Math.round(Number(String(trainer.price || 0).replace(/,/g, '')) * 12);
 
   return (
     <PageShell>

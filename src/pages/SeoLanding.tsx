@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle2, MapPin, Search, ShieldCheck, Star } from 'luc
 import SEO from '../components/SEO';
 import { api } from '../utils/api';
 import { HeroBlock, MetricCard, PageContainer, PageShell, SectionTitle, Surface } from '../components/premium';
-import { matchesCity, matchesGender, matchesMode, matchesSpecialty, toSessionPrice } from '../utils/trainerMatching';
+import { matchesCity, matchesGender, matchesMode, matchesSpecialty, toStartingPrice } from '../utils/trainerMatching';
 
 const baseUrl = 'https://liftrz.com';
 
@@ -386,7 +386,7 @@ export default function SeoLanding() {
               <Link key={trainer.id} to={`/trainer/${trainer.slug || trainer.id}`} className="rounded-xl border border-slate-700/50 bg-surface-high/80 p-4 hover:border-primary">
                 <h3 className="font-bold">{trainer.name}</h3>
                 <p className="text-xs text-muted mt-1">{trainer.city} / {trainer.specialty}</p>
-                <p className="text-primary text-sm mt-3">PKR {toSessionPrice(trainer).toLocaleString()}</p>
+                <p className="text-primary text-sm mt-3">From PKR {toStartingPrice(trainer).toLocaleString()}</p>
               </Link>
             )) : (
               <div className="md:col-span-3 rounded-xl border border-primary/30 bg-primary/10 p-5">

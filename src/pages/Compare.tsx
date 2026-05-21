@@ -5,10 +5,7 @@ import SEO from '../components/SEO';
 import { api } from '../utils/api';
 import { SkeletonCard } from '../components/Skeleton';
 import { HeroBlock, PageContainer, PageShell } from '../components/premium';
-
-const toNumber = (value: number | string | undefined) => Number(String(value || 0).replace(/,/g, ''));
-const toSessionPrice = (trainer: any) => toNumber(trainer.sessionPrice ?? trainer.price);
-const toMonthlyEstimate = (trainer: any) => toNumber(trainer.monthlyPrice ?? trainer.monthlyPackagePrice) || Math.round(toSessionPrice(trainer) * 12);
+import { toMonthlyEstimate, toStartingPrice } from '../utils/trainerMatching';
 
 export default function Compare() {
   const [trainers, setTrainers] = useState<any[]>([]);
@@ -69,8 +66,8 @@ export default function Compare() {
               </thead>
               <tbody className="text-slate-300">
                 <tr className="border-b border-slate-700/30">
-                  <td className="py-3 pr-4 text-slate-400">Price / session</td>
-                  {compared.map((t) => <td key={t.id} className="py-3 px-4">PKR {toSessionPrice(t).toLocaleString()}</td>)}
+                  <td className="py-3 pr-4 text-slate-400">Starting price</td>
+                  {compared.map((t) => <td key={t.id} className="py-3 px-4">PKR {toStartingPrice(t).toLocaleString()}</td>)}
                 </tr>
                 <tr className="border-b border-slate-700/30">
                   <td className="py-3 pr-4 text-slate-400">Monthly estimate</td>

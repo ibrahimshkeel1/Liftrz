@@ -414,6 +414,13 @@ const publicTrainer = (trainer, db) => {
     ...safe
   } = trainer;
   const stats = db ? trainerStats(db, trainer.id) : {};
+  const approvedProtocols = db
+    ? db.protocols.filter((protocol) => protocol.trainerId === trainer.id && (protocol.status === 'approved' || !protocol.status))
+    : [];
+  const packagePrices = approvedProtocols
+    .map((protocol) => parseAmount(protocol.price))
+    .filter((price) => price > 0);
+  const lowestPackagePrice = packagePrices.length ? Math.min(...packagePrices) : 0;
   return {
     ...safe,
     certifications: Array.isArray(trainer.certifications)
@@ -432,6 +439,9 @@ const publicTrainer = (trainer, db) => {
     reviews: stats.reviewCount || 0,
     completedBookings: stats.completedClients || 0,
     activeClients: stats.activeClients || 0,
+    lowestPackagePrice,
+    startingPrice: lowestPackagePrice || parseAmount(trainer.price),
+    approvedPackageCount: approvedProtocols.length,
     commissionRate: trainer.commissionRate ?? db.platformSettings?.commissionRate ?? 0.15,
     contactPhone: trainer.phoneHidden ? undefined : contactPhone,
     whatsapp: trainer.phoneHidden ? undefined : whatsapp

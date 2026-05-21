@@ -4,6 +4,7 @@ import { ArrowRight, CalendarCheck, ChevronDown, Clock, LockKeyhole, MapPin, Sea
 import SEO from '../components/SEO';
 import { api } from '../utils/api';
 import { MotionCard, Reveal } from '../components/Motion';
+import { toStartingPrice } from '../utils/trainerMatching';
 
 const cities = ['Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Gujranwala', 'Sialkot'];
 const goals = ['Lose Weight', 'Build Muscle', 'Wedding Prep', 'Strength', 'Yoga', 'Rehab'];
@@ -18,8 +19,6 @@ const popularSearches = [
   { label: 'Personal trainer Islamabad', href: '/personal-trainer-islamabad' },
   { label: 'Personal trainer Karachi', href: '/personal-trainer-karachi' }
 ];
-
-const toNumber = (value: number | string | undefined) => Number(String(value || 0).replace(/,/g, ''));
 
 export default function Home() {
   const [city, setCity] = useState('Lahore');
@@ -213,10 +212,10 @@ export default function Home() {
 }
 
 function FeaturedProof({ trainer, index }: { trainer: any; index: number }) {
-  const numericPrice = toNumber(trainer.price);
-  const price = Number.isFinite(numericPrice) && numericPrice > 0
-    ? `PKR ${numericPrice.toLocaleString()}/session`
-    : trainer.price || trainer.detail;
+  const numericPrice = toStartingPrice(trainer);
+  const price = numericPrice > 0
+    ? `From PKR ${numericPrice.toLocaleString()}`
+    : trainer.detail || 'Ask for pricing';
   return (
     <Link
       to={trainer.id ? `/trainer/${trainer.slug || trainer.id}` : '/discover'}

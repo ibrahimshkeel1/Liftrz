@@ -52,8 +52,10 @@ const genericSearchWords = new Set([
 ]);
 
 export const toNumber = (value: number | string | undefined) => Number(String(value || 0).replace(/,/g, ''));
-export const toSessionPrice = (trainer: any) => toNumber(trainer.sessionPrice ?? trainer.price);
-export const toMonthlyEstimate = (trainer: any) => toNumber(trainer.monthlyPrice ?? trainer.monthlyPackagePrice) || Math.round(toSessionPrice(trainer) * 12);
+const firstPositive = (...values: Array<number | string | undefined>) => values.map(toNumber).find((value) => value > 0) || 0;
+export const toStartingPrice = (trainer: any) => firstPositive(trainer.lowestPackagePrice, trainer.startingPrice, trainer.monthlyPrice, trainer.monthlyPackagePrice, trainer.sessionPrice, trainer.price);
+export const toSessionPrice = (trainer: any) => toStartingPrice(trainer);
+export const toMonthlyEstimate = (trainer: any) => firstPositive(trainer.monthlyPrice, trainer.monthlyPackagePrice, trainer.lowestPackagePrice, trainer.startingPrice) || Math.round(firstPositive(trainer.sessionPrice, trainer.price) * 12);
 
 export function normalizeText(value: unknown) {
   return String(value || '')

@@ -7,8 +7,7 @@ import EmptyState from '../components/EmptyState';
 import { SkeletonCard } from '../components/Skeleton';
 import { HeroBlock, PageContainer, PageShell, Surface } from '../components/premium';
 import { getFavorites, toggleFavorite } from '../utils/favorites';
-
-const toNumber = (value: number | string) => Number(String(value || 0).replace(/,/g, ''));
+import { toMonthlyEstimate } from '../utils/trainerMatching';
 
 export default function SavedTrainers() {
   const [trainers, setTrainers] = useState<any[]>([]);
@@ -81,8 +80,8 @@ export default function SavedTrainers() {
                       <p className="mt-0.5 text-sm text-slate-400">{trainer.specialty}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-primary">PKR {Math.round(toNumber(trainer.price) * 12).toLocaleString()}</p>
-                      <p className="text-xs text-slate-500">per month</p>
+                      <p className="text-lg font-bold text-primary">{toMonthlyEstimate(trainer) > 0 ? `PKR ${toMonthlyEstimate(trainer).toLocaleString()}` : 'Ask'}</p>
+                      <p className="text-xs text-slate-500">{toMonthlyEstimate(trainer) > 0 ? 'starting from' : 'for pricing'}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
