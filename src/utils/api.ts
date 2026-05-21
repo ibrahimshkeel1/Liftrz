@@ -49,6 +49,7 @@ export const api = {
 
   getProtocols: (trainerId: string) => request(`/trainers/${trainerId}/protocols`),
   createProtocol: (data: any) => request('/protocols', { method: 'POST', body: JSON.stringify(data) }),
+  updateProtocol: (id: string, data: any) => request(`/protocols/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteProtocol: (id: string) => request(`/protocols/${id}`, { method: 'DELETE' }),
 
   getLeads: (trainerId: string) => request(`/trainers/${trainerId}/leads`),

@@ -7,7 +7,15 @@ import BookingChatPanel from '../components/BookingChatPanel';
 import { useToast } from '../components/ToastProvider';
 import { HeroBlock, MetricCard, PageContainer, PageShell, Surface } from '../components/premium';
 
-const money = (value: number) => `PKR ${Number(value || 0).toLocaleString()}`;
+const money = (value: number | string) => `PKR ${Number(String(value || 0).replace(/,/g, '')).toLocaleString()}`;
+const protocolHasPendingEdit = (protocol: any) => protocol.editStatus === 'pending_review' && protocol.pendingUpdate;
+const protocolDisplay = (protocol: any) => protocolHasPendingEdit(protocol) ? { ...protocol, ...protocol.pendingUpdate } : protocol;
+const protocolStatusLabel = (protocol: any) => {
+  if (protocolHasPendingEdit(protocol)) return 'pending edit';
+  if (protocol.status === 'approved' || !protocol.status) return 'approved';
+  return protocol.status;
+};
+const protocolReviewNote = (protocol: any) => protocol.editReviewNote || protocol.reviewNote;
 const tabs = [
   { id: 'overview', label: 'Overview' },
   { id: 'notifications', label: 'Notifications' },
@@ -266,7 +274,7 @@ export default function AdminDashboard() {
   const visiblePayments = paymentFilter === 'all' ? payments : payments.filter((payment) => payment.status === paymentFilter);
   const pendingTrainers = trainers.filter((trainer) => trainer.verificationStatus !== 'approved');
   const pendingFeatured = trainers.filter((trainer) => trainer.featuredStatus === 'requested');
-  const pendingSubmissions = trainers.filter((trainer) => ['identityStatus', 'profileAssetsStatus', 'payoutStatus', 'certificationsStatus'].some((key) => trainer[key] === 'pending_review')).length + protocols.filter((protocol) => protocol.status === 'pending_review').length;
+  const pendingSubmissions = trainers.filter((trainer) => ['identityStatus', 'profileAssetsStatus', 'payoutStatus', 'certificationsStatus'].some((key) => trainer[key] === 'pending_review')).length + protocols.filter((protocol) => protocol.status === 'pending_review' || protocolHasPendingEdit(protocol)).length;
   const activeFeatured = trainers.filter((trainer) => trainer.featuredStatus === 'approved' || trainer.featuredManual);
   const pendingPayoutsList = payouts.filter((payout) => payout.status !== 'paid');
   const paidPayoutsList = payouts.filter((payout) => payout.status === 'paid');
@@ -453,14 +461,17 @@ export default function AdminDashboard() {
 
             <Panel title="Package approvals">
               {protocols.length === 0 && <EmptyRow text="No packages submitted." />}
-              {protocols.map((protocol) => (
+              {protocols.map((protocol) => {
+                const display = protocolDisplay(protocol);
+                return (
                 <div key={protocol.id}>
                   <Row>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-white">{protocol.title}</h3>
-                    <p className="mt-1 text-xs text-slate-400">{protocol.trainer?.name || protocol.trainerId} / {protocol.duration} / {money(protocol.price)}</p>
-                    <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">{protocol.status || 'approved'}</p>
-                    <p className="mt-3 text-sm text-slate-400">{protocol.description}</p>
+                    <h3 className="font-semibold text-white">{display.title}</h3>
+                    <p className="mt-1 text-xs text-slate-400">{protocol.trainer?.name || protocol.trainerId} / {display.duration} / {money(display.price)}</p>
+                    <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">{protocolStatusLabel(protocol)}</p>
+                    <p className="mt-3 text-sm text-slate-400">{display.description}</p>
+                    {protocolHasPendingEdit(protocol) && <p className="mt-2 text-xs text-amber-200">Reviewing edited package details. Current approved package stays live until approval.</p>}
                   </div>
                   <div className="flex gap-2">
                     <button disabled={actionId === `protocol-${protocol.id}`} onClick={() => reviewProtocol(protocol.id, 'approved')} className="rounded-full bg-primary px-3 py-2 text-xs font-medium text-white disabled:opacity-50">Approve</button>
@@ -468,7 +479,8 @@ export default function AdminDashboard() {
                   </div>
                   </Row>
                 </div>
-              ))}
+                );
+              })}
             </Panel>
           </div>
         )}
@@ -827,17 +839,20 @@ export default function AdminDashboard() {
                 </DetailBox>
                 <DetailBox title="Packages">
                   <div className="grid gap-3">
-                    {protocols.filter((protocol) => protocol.trainerId === selectedTrainer.id).map((protocol) => (
+                    {protocols.filter((protocol) => protocol.trainerId === selectedTrainer.id).map((protocol) => {
+                      const display = protocolDisplay(protocol);
+                      return (
                       <div key={protocol.id} className="rounded-xl border border-slate-700/50 bg-surface-high/50 p-3">
-                        <p className="font-semibold text-white">{protocol.title}</p>
-                        <p className="text-xs text-slate-400">{money(protocol.price)} / {protocol.status || 'approved'}</p>
-                        {protocol.reviewNote && <p className="mt-1 text-xs text-rose-200">{protocol.reviewNote}</p>}
+                        <p className="font-semibold text-white">{display.title}</p>
+                        <p className="text-xs text-slate-400">{money(display.price)} / {protocolStatusLabel(protocol)}</p>
+                        {protocolReviewNote(protocol) && <p className="mt-1 text-xs text-rose-200">{protocolReviewNote(protocol)}</p>}
                         <div className="mt-3 flex gap-2">
                           <button onClick={() => reviewProtocol(protocol.id, 'approved')} className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-white">Approve</button>
                           <button onClick={() => reviewProtocol(protocol.id, 'rejected')} className="rounded-lg border border-slate-700/50 px-3 py-1 text-xs font-bold text-slate-300">Reject</button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </DetailBox>
               </div>

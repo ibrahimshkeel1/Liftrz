@@ -150,6 +150,51 @@ const validateBody = (rules) => (req, res, next) => {
 
 const makeId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const parseAmount = (value) => Number(String(value || 0).replace(/,/g, '')) || 0;
+const normalizeProtocolPayload = (body = {}) => {
+  const featureSource = Array.isArray(body.features) ? body.features : String(body.features || '').split('\n');
+  return {
+    title: sanitizeString(body.title, 120),
+    description: sanitizeString(body.description, 1500),
+    duration: sanitizeString(body.duration, 80),
+    price: sanitizeString(String(body.price ?? ''), 30),
+    features: featureSource.map((item) => sanitizeString(item, 160)).filter(Boolean).slice(0, 20)
+  };
+};
+const validateProtocolPayload = (payload) => {
+  if (!payload.title) return 'Package title is required';
+  if (!payload.duration) return 'Package duration is required';
+  if (!payload.price || parseAmount(payload.price) <= 0) return 'Package price must be greater than 0';
+  if (!payload.description) return 'Package description is required';
+  if (!payload.features.length) return 'At least one package feature is required';
+  return '';
+};
+const hasApprovedProtocol = (protocol) => protocol.status === 'approved' || !protocol.status;
+const hasPendingProtocolWork = (protocol) => protocol.status === 'pending_review' || protocol.editStatus === 'pending_review';
+const syncTrainerPackageStatus = (db, trainerId) => {
+  const trainerIndex = db.trainers.findIndex((trainer) => trainer.id === trainerId);
+  if (trainerIndex === -1) return;
+  const trainerProtocols = db.protocols.filter((protocol) => protocol.trainerId === trainerId);
+  if (trainerProtocols.some(hasApprovedProtocol)) {
+    db.trainers[trainerIndex].packagesStatus = 'approved';
+  } else if (trainerProtocols.some(hasPendingProtocolWork)) {
+    db.trainers[trainerIndex].packagesStatus = 'pending_review';
+  } else if (trainerProtocols.some((protocol) => protocol.status === 'rejected' || protocol.editStatus === 'rejected')) {
+    db.trainers[trainerIndex].packagesStatus = 'rejected';
+  } else {
+    db.trainers[trainerIndex].packagesStatus = 'not_submitted';
+  }
+};
+const publicProtocol = (protocol) => {
+  const {
+    pendingUpdate,
+    editStatus,
+    editSubmittedAt,
+    editReviewNote,
+    reviewNote,
+    ...safe
+  } = protocol;
+  return safe;
+};
 const route = (handler) => (req, res, next) => {
   Promise.resolve(handler(req, res, next)).catch(next);
 };
@@ -1084,7 +1129,8 @@ app.get('/api/trainers/:id/protocols', route(async (req, res) => {
   const trainer = findTrainerByIdOrSlug(db, req.params.id);
   if (!trainer) return res.status(404).json({ message: 'Trainer not found' });
   const canSeeDrafts = canAccessTrainer(req.currentUser, trainer.id);
-  res.json(db.protocols.filter((protocol) => protocol.trainerId === trainer.id && (canSeeDrafts || protocol.status === 'approved' || !protocol.status)));
+  const protocols = db.protocols.filter((protocol) => protocol.trainerId === trainer.id && (canSeeDrafts || protocol.status === 'approved' || !protocol.status));
+  res.json(canSeeDrafts ? protocols : protocols.map(publicProtocol));
 }));
 
 app.post('/api/protocols', requireAuth, route(async (req, res) => {
@@ -1093,20 +1139,63 @@ app.post('/api/protocols', requireAuth, route(async (req, res) => {
     return res.status(403).json({ message: 'Access denied' });
   }
   const db = await readDB();
+  const payload = normalizeProtocolPayload(req.body);
+  const validationError = validateProtocolPayload(payload);
+  if (validationError) return res.status(400).json({ message: validationError });
+
   const protocol = {
     id: makeId('protocol'),
     trainerId,
-    ...req.body,
+    ...payload,
     status: 'pending_review',
     submittedAt: new Date().toISOString()
   };
   db.protocols.push(protocol);
-  const trainerIndex = db.trainers.findIndex((trainer) => trainer.id === trainerId);
-  if (trainerIndex !== -1) {
-    db.trainers[trainerIndex].packagesStatus = 'pending_review';
-  }
+  syncTrainerPackageStatus(db, trainerId);
   await writeDB(db);
   res.status(201).json(protocol);
+}));
+
+app.patch('/api/protocols/:id', requireAuth, route(async (req, res) => {
+  const db = await readDB();
+  const index = db.protocols.findIndex((item) => item.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Package not found' });
+  if (!canAccessTrainer(req.currentUser, db.protocols[index].trainerId)) {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+
+  const payload = normalizeProtocolPayload(req.body);
+  const validationError = validateProtocolPayload(payload);
+  if (validationError) return res.status(400).json({ message: validationError });
+
+  const now = new Date().toISOString();
+  const approvedPackage = hasApprovedProtocol(db.protocols[index]);
+  if (approvedPackage) {
+    db.protocols[index] = {
+      ...db.protocols[index],
+      pendingUpdate: {
+        ...payload,
+        submittedAt: now
+      },
+      editStatus: 'pending_review',
+      editSubmittedAt: now,
+      editReviewNote: '',
+      updatedAt: now
+    };
+  } else {
+    db.protocols[index] = {
+      ...db.protocols[index],
+      ...payload,
+      status: 'pending_review',
+      reviewNote: '',
+      submittedAt: now,
+      updatedAt: now
+    };
+  }
+
+  syncTrainerPackageStatus(db, db.protocols[index].trainerId);
+  await writeDB(db);
+  res.json(db.protocols[index]);
 }));
 
 app.delete('/api/protocols/:id', requireAuth, route(async (req, res) => {
@@ -1117,6 +1206,7 @@ app.delete('/api/protocols/:id', requireAuth, route(async (req, res) => {
     return res.status(403).json({ message: 'Access denied' });
   }
   db.protocols = db.protocols.filter((item) => item.id !== req.params.id);
+  syncTrainerPackageStatus(db, protocol.trainerId);
   await writeDB(db);
   res.status(204).end();
 }));
@@ -1611,24 +1701,68 @@ app.patch('/api/admin/protocols/:id', requireRole('admin'), route(async (req, re
   const index = db.protocols.findIndex((protocol) => protocol.id === req.params.id);
   if (index === -1) return res.status(404).json({ message: 'Package not found' });
   const status = ['pending_review', 'approved', 'rejected'].includes(req.body.status) ? req.body.status : db.protocols[index].status;
-  db.protocols[index] = {
-    ...db.protocols[index],
-    status,
-    reviewNote: sanitizeString(req.body.reviewNote ?? db.protocols[index].reviewNote, 500),
-    reviewedAt: new Date().toISOString()
-  };
-  const trainerProtocols = db.protocols.filter((protocol) => protocol.trainerId === db.protocols[index].trainerId);
+  const reviewNote = sanitizeString(req.body.reviewNote ?? '', 500);
+  const now = new Date().toISOString();
+  const pendingEdit = db.protocols[index].editStatus === 'pending_review' && db.protocols[index].pendingUpdate;
+
+  if (pendingEdit) {
+    if (status === 'approved') {
+      const {
+        pendingUpdate,
+        editStatus,
+        editSubmittedAt,
+        editReviewNote,
+        ...currentProtocol
+      } = db.protocols[index];
+      db.protocols[index] = {
+        ...currentProtocol,
+        ...pendingUpdate,
+        status: currentProtocol.status || 'approved',
+        reviewNote: reviewNote || currentProtocol.reviewNote || '',
+        reviewedAt: now,
+        updatedAt: now
+      };
+    } else if (status === 'rejected') {
+      const {
+        pendingUpdate,
+        editSubmittedAt,
+        ...currentProtocol
+      } = db.protocols[index];
+      db.protocols[index] = {
+        ...currentProtocol,
+        editStatus: 'rejected',
+        editReviewNote: reviewNote,
+        reviewedAt: now,
+        updatedAt: now
+      };
+    } else {
+      db.protocols[index] = {
+        ...db.protocols[index],
+        editStatus: 'pending_review',
+        editReviewNote: reviewNote || db.protocols[index].editReviewNote || '',
+        reviewedAt: now
+      };
+    }
+  } else {
+    db.protocols[index] = {
+      ...db.protocols[index],
+      status,
+      reviewNote: sanitizeString(req.body.reviewNote ?? db.protocols[index].reviewNote, 500),
+      reviewedAt: now
+    };
+  }
+
   const trainerIndex = db.trainers.findIndex((trainer) => trainer.id === db.protocols[index].trainerId);
   if (trainerIndex !== -1) {
-    db.trainers[trainerIndex].packagesStatus = trainerProtocols.some((protocol) => protocol.status === 'approved') ? 'approved' : 'pending_review';
-    if (req.body.reviewNote) {
+    syncTrainerPackageStatus(db, db.protocols[index].trainerId);
+    if (reviewNote) {
       db.trainers[trainerIndex].reviewMessages = [
         ...(db.trainers[trainerIndex].reviewMessages || []),
         {
           id: makeId('review-note'),
           section: 'package',
           status,
-          note: sanitizeString(req.body.reviewNote, 500),
+          note: reviewNote,
           createdAt: new Date().toISOString()
         }
       ];

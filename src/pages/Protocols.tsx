@@ -1,12 +1,31 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { ArrowUpRight, Banknote, Clock3, Loader2, Plus, Sparkles, Trash2, X } from 'lucide-react';
+import { ArrowUpRight, Banknote, Clock3, Loader2, Pencil, Plus, Sparkles, Trash2, X } from 'lucide-react';
 import SEO from '../components/SEO';
 import { HeroBlock, InfoPill, MetricCard, PageContainer, PageShell, SectionTitle, Surface } from '../components/premium';
 import { api } from '../utils/api';
 import { useSession } from '../utils/session';
 
 const emptyForm = { title: '', description: '', duration: '', price: '', features: '' };
+const packageAmount = (value: any) => Number(String(value || 0).replace(/,/g, '')) || 0;
+const hasPendingEdit = (protocol: any) => protocol.editStatus === 'pending_review' && protocol.pendingUpdate;
+const packageDisplay = (protocol: any) => hasPendingEdit(protocol) ? { ...protocol, ...protocol.pendingUpdate } : protocol;
+const packageStatus = (protocol: any) => {
+  if (hasPendingEdit(protocol)) return 'Pending edit';
+  if (protocol.status === 'approved' || !protocol.status) return 'Approved';
+  if (protocol.status === 'rejected') return 'Rejected';
+  return 'Pending';
+};
+const formFromPackage = (protocol: any) => {
+  const source = packageDisplay(protocol);
+  return {
+    title: source.title || '',
+    description: source.description || '',
+    duration: source.duration || '',
+    price: source.price ? String(source.price) : '',
+    features: Array.isArray(source.features) ? source.features.join('\n') : ''
+  };
+};
 
 export default function Protocols() {
   const session = useSession();
@@ -18,6 +37,7 @@ export default function Protocols() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingProtocol, setEditingProtocol] = useState<any | null>(null);
   const [formData, setFormData] = useState(emptyForm);
 
   const fetchProtocols = async () => {
@@ -42,21 +62,45 @@ export default function Protocols() {
     fetchProtocols();
   }, [trainerId]);
 
-  const handleCreate = async (event: FormEvent) => {
+  const openCreateModal = () => {
+    setEditingProtocol(null);
+    setFormData(emptyForm);
+    setActionError('');
+    setModalOpen(true);
+  };
+
+  const openEditModal = (protocol: any) => {
+    setEditingProtocol(protocol);
+    setFormData(formFromPackage(protocol));
+    setActionError('');
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    if (saving) return;
+    setModalOpen(false);
+    setEditingProtocol(null);
+    setFormData(emptyForm);
+  };
+
+  const handleSave = async (event: FormEvent) => {
     event.preventDefault();
     setSaving(true);
     setActionError('');
+    const payload = {
+      ...formData,
+      features: formData.features.split('\n').map((item) => item.trim()).filter(Boolean)
+    };
     try {
-      await api.createProtocol({
-        trainerId,
-        ...formData,
-        features: formData.features.split('\n').map((item) => item.trim()).filter(Boolean)
-      });
-      setModalOpen(false);
-      setFormData(emptyForm);
+      if (editingProtocol) {
+        await api.updateProtocol(editingProtocol.id, payload);
+      } else {
+        await api.createProtocol({ trainerId, ...payload });
+      }
+      closeModal();
       await fetchProtocols();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to save protocol');
+      setActionError(err instanceof Error ? err.message : 'Failed to save package');
     } finally {
       setSaving(false);
     }
@@ -102,8 +146,8 @@ export default function Protocols() {
           title="Build offers clients can compare fast."
           description="Liftrz works better when packages are standardized. Define duration, price and what is included so discovery and booking stay clear."
           actions={
-            <button type="button" onClick={() => setModalOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark">
-              <Plus className="h-4 w-4" /> New protocol
+            <button type="button" onClick={openCreateModal} className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark">
+              <Plus className="h-4 w-4" /> New package
             </button>
           }
           aside={
@@ -111,7 +155,7 @@ export default function Protocols() {
               <p className="text-xs font-semibold text-primary">Offer posture</p>
               <div className="mt-5 grid gap-3">
                 <MetricCard label="Approved packages" value={protocols.filter((protocol) => protocol.status === 'approved' || !protocol.status).length} active={protocols.length > 0} />
-                <MetricCard label="Price range" value={protocols.length ? `PKR ${Math.min(...protocols.map((protocol) => Number(protocol.price || 0))).toLocaleString()}` : 'None'} />
+                <MetricCard label="Price range" value={protocols.length ? `PKR ${Math.min(...protocols.map((protocol) => packageAmount(packageDisplay(protocol).price))).toLocaleString()}` : 'None'} />
                 <MetricCard label="Packaging" value="Standardized" />
               </div>
             </Surface>
@@ -136,31 +180,41 @@ export default function Protocols() {
               <p className="text-slate-400">No packages yet. Add at least one clear coaching offer before driving traffic to your profile.</p>
             </Surface>
           ) : (
-            protocols.map((protocol) => (
+            protocols.map((protocol) => {
+              const display = packageDisplay(protocol);
+              return (
               <div key={protocol.id}>
                 <Surface className="overflow-hidden">
                 <div className="flex items-start justify-between gap-4 border-b border-slate-700/50 px-6 py-5">
                   <div>
-                    <p className="text-xs font-semibold text-primary">Liftrz package / {protocol.status === 'approved' || !protocol.status ? 'approved' : 'approval within 24hr'}</p>
-                    <h2 className="editorial-header mt-2 text-3xl font-bold text-white">{protocol.title}</h2>
+                    <p className="text-xs font-semibold text-primary">Liftrz package / {packageStatus(protocol)}</p>
+                    <h2 className="editorial-header mt-2 text-3xl font-bold text-white">{display.title}</h2>
+                    {hasPendingEdit(protocol) && (
+                      <p className="mt-2 text-xs text-amber-200">Edited version is waiting for admin approval. The current approved package stays live.</p>
+                    )}
                   </div>
-                  <button type="button" disabled={deletingId === protocol.id} onClick={() => handleDelete(protocol.id)} className="rounded-full border border-slate-700/50 bg-surface-high/80 p-3 text-slate-400 transition hover:border-rose-500/40 hover:text-rose-300 disabled:opacity-50">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <div className="flex shrink-0 gap-2">
+                    <button type="button" onClick={() => openEditModal(protocol)} aria-label={`Edit ${display.title}`} className="rounded-full border border-slate-700/50 bg-surface-high/80 p-3 text-slate-400 transition hover:border-primary/40 hover:text-primary">
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button type="button" disabled={deletingId === protocol.id} onClick={() => handleDelete(protocol.id)} aria-label={`Delete ${display.title}`} className="rounded-full border border-slate-700/50 bg-surface-high/80 p-3 text-slate-400 transition hover:border-rose-500/40 hover:text-rose-300 disabled:opacity-50">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid gap-5 px-6 py-6">
                   <div className="grid grid-cols-2 gap-3">
-                    <MetricCard label="Price" value={`PKR ${Number(protocol.price || 0).toLocaleString()}`} active />
-                    <MetricCard label="Status" value={protocol.status === 'approved' || !protocol.status ? 'Approved' : protocol.status === 'rejected' ? 'Rejected' : 'Pending'} />
+                    <MetricCard label="Price" value={`PKR ${packageAmount(display.price).toLocaleString()}`} active />
+                    <MetricCard label="Status" value={packageStatus(protocol)} />
                   </div>
 
-                  <p className="text-sm leading-7 text-slate-400">{protocol.description}</p>
+                  <p className="text-sm leading-7 text-slate-400">{display.description}</p>
 
                   <div>
                     <p className="text-xs font-semibold text-slate-500">Included features</p>
                     <div className="mt-4 grid gap-3">
-                      {protocol.features?.map((feature: string, index: number) => (
+                      {display.features?.map((feature: string, index: number) => (
                         <div key={`${protocol.id}-${index}`} className="flex gap-3 rounded-2xl border border-slate-700/50 bg-surface-high/80 px-4 py-3 text-sm text-white">
                           <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                           <span>{feature}</span>
@@ -171,7 +225,8 @@ export default function Protocols() {
                 </div>
                 </Surface>
               </div>
-            ))
+              );
+            })
           )}
         </section>
 
@@ -179,13 +234,16 @@ export default function Protocols() {
           <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-4 backdrop-blur-md">
             <div className="flex min-h-full items-center justify-center py-12">
               <Surface className="relative w-full max-w-2xl p-6 md:p-8">
-                <button type="button" onClick={() => setModalOpen(false)} className="absolute right-5 top-5 rounded-full border border-slate-700/50 bg-surface-high/80 p-3 text-slate-400 transition hover:text-white">
+                <button type="button" onClick={closeModal} className="absolute right-5 top-5 rounded-full border border-slate-700/50 bg-surface-high/80 p-3 text-slate-400 transition hover:text-white">
                   <X className="h-4 w-4" />
                 </button>
 
-                <SectionTitle title="Create a package" description="Keep the offer simple, priced in PKR, and easy to compare with other trainers." />
+                <SectionTitle
+                  title={editingProtocol ? 'Edit package' : 'Create a package'}
+                  description={editingProtocol ? 'Change title, duration, price, description and every included feature.' : 'Keep the offer simple, priced in PKR, and easy to compare with other trainers.'}
+                />
 
-                <form onSubmit={handleCreate} className="grid gap-5">
+                <form onSubmit={handleSave} className="grid gap-5">
                   <div className="grid gap-4 md:grid-cols-2">
                     <Input label="Package title" value={formData.title} onChange={(value) => setFormData({ ...formData, title: value })} />
                     <Input label="Duration" value={formData.duration} onChange={(value) => setFormData({ ...formData, duration: value })} placeholder="8 weeks, 12 weeks" />
@@ -196,7 +254,7 @@ export default function Protocols() {
                   <TextArea label="Features" rows={5} value={formData.features} onChange={(value) => setFormData({ ...formData, features: value })} placeholder="Weekly check-ins&#10;Custom meal plan&#10;Video form review" />
 
                   <button type="submit" disabled={saving} className="rounded-full bg-primary py-4 text-xs font-semibold text-white disabled:opacity-50">
-                    {saving ? 'Saving...' : 'Save protocol'}
+                    {saving ? 'Saving...' : editingProtocol ? 'Update package' : 'Save package'}
                   </button>
                 </form>
               </Surface>
