@@ -77,7 +77,7 @@ export default function FindTrainerQuiz() {
     if (answers.gender && answers.gender !== 'All') params.set('gender', answers.gender);
     if (answers.goal) params.set('specialty', answers.goal);
     if (answers.location) params.set('mode', answers.location);
-    if (answers.budget) params.set('maxPrice', answers.budget);
+    if (answers.budget && answers.budget !== '100000') params.set('maxPrice', answers.budget);
     return `/discover?${params.toString()}`;
   };
 

@@ -317,6 +317,7 @@ const canAccessBooking = (user, booking) => (
   || (user?.role === 'client' && user.id === booking?.clientId)
 );
 const findTrainerByIdOrSlug = (db, lookupId) => db.trainers.find((trainer) => trainer.id === lookupId || trainer.slug === lookupId);
+const isPublicTrainerProfile = (trainer) => trainer.verificationStatus === 'approved' && trainer.profileStatus !== 'rejected';
 const isFeaturedTrainer = (trainer) => {
   const stillActive = !trainer.featuredUntil || new Date(trainer.featuredUntil).getTime() >= Date.now();
   const paidApproved = trainer.featuredStatus === 'approved' && trainer.featuredPaymentStatus === 'verified';
@@ -661,7 +662,7 @@ app.get('/api/trainers', route(async (req, res) => {
   const db = await readDB();
   const includePending = req.query.includePending === 'true' && req.currentUser?.role === 'admin';
   const trainers = db.trainers
-    .filter((trainer) => includePending || (trainer.verificationStatus === 'approved' && trainer.profileStatus === 'live'))
+    .filter((trainer) => includePending || isPublicTrainerProfile(trainer))
     .map((trainer) => ({ trainer, stats: trainerStats(db, trainer.id) }))
     .sort((a, b) => {
       const scoreA = (isFeaturedTrainer(a.trainer) ? 1000 : 0) + Number(a.stats.completedClients || 0) * 2 + Number(a.stats.averageRating || 0) * 10 + Number(a.trainer.profileCompleteness || 0);
@@ -675,7 +676,7 @@ app.get('/api/trainers', route(async (req, res) => {
 app.get('/api/featured-trainers', route(async (_req, res) => {
   const db = await readDB();
   const trainers = db.trainers
-    .filter((trainer) => trainer.verificationStatus === 'approved' && trainer.profileStatus === 'live')
+    .filter(isPublicTrainerProfile)
     .filter(isFeaturedTrainer)
     .sort((a, b) => new Date(b.featuredApprovedAt || b.updatedAt || 0).getTime() - new Date(a.featuredApprovedAt || a.updatedAt || 0).getTime())
     .slice(0, 6)
@@ -1933,7 +1934,7 @@ app.get('/sitemap.xml', route(async (_req, res) => {
     urls.push(`  <url><loc>https://${canonicalHost}/blog/${slug}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
   }
   for (const trainer of db.trainers) {
-    if (trainer.profileStatus === 'live') {
+    if (isPublicTrainerProfile(trainer)) {
       const trainerUrl = trainer.slug ? `trainer/${trainer.slug}` : `trainer/${trainer.id}`;
       urls.push(`  <url><loc>https://${canonicalHost}/${trainerUrl}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
     }

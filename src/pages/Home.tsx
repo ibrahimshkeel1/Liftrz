@@ -35,7 +35,9 @@ export default function Home() {
   }, []);
 
   const budgetPercent = ((budget - minBudget) / (maxBudget - minBudget)) * 100;
-  const searchHref = `/discover?city=${encodeURIComponent(city)}&specialty=${encodeURIComponent(goal)}&maxPrice=${budget}`;
+  const searchParams = new URLSearchParams({ city, specialty: goal });
+  if (budget < maxBudget) searchParams.set('maxPrice', String(budget));
+  const searchHref = `/discover?${searchParams.toString()}`;
 
   return (
     <div className="relative overflow-hidden bg-background">

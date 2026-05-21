@@ -47,6 +47,7 @@ export default function Discover() {
   const [gender, setGender] = useState(optionFromParam(searchParams.get('gender'), genders));
   const [specialty, setSpecialty] = useState(specialtyFromParam(searchParams.get('specialty')));
   const [maxPrice, setMaxPrice] = useState(budgetFromParam(searchParams.get('maxPrice')));
+  const [budgetActive, setBudgetActive] = useState(searchParams.has('maxPrice'));
   const [sort, setSort] = useState('recommended');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [hasTransformations, setHasTransformations] = useState(false);
@@ -86,6 +87,7 @@ export default function Discover() {
     setGender(optionFromParam(searchParams.get('gender'), genders));
     setSpecialty(nextSpecialty);
     setMaxPrice(nextBudget);
+    setBudgetActive(searchParams.has('maxPrice'));
     setMatchForm((current) => ({
       ...current,
       city: nextCity === 'All' ? current.city : nextCity,
@@ -100,9 +102,9 @@ export default function Discover() {
       path: '/discover',
       city,
       goal: specialty,
-      metadata: { query: deferredQuery, mode, gender, maxPrice, sort }
+      metadata: { query: deferredQuery, mode, gender, maxPrice, budgetActive, sort }
     }).catch(() => {});
-  }, [deferredQuery, city, mode, gender, specialty, maxPrice, sort]);
+  }, [deferredQuery, city, mode, gender, specialty, maxPrice, budgetActive, sort]);
 
   const filtered = useMemo(() => {
     const ranked = trainers
@@ -114,7 +116,7 @@ export default function Discover() {
           matchesMode(trainer, mode) &&
           matchesGender(trainer, gender) &&
           matchesSpecialty(trainer, specialty) &&
-          monthlyPrice <= maxPrice &&
+          (!budgetActive || monthlyPrice <= maxPrice) &&
           (!verifiedOnly || trainer.verificationStatus === 'approved') &&
           (!hasTransformations || trainer.transformationImages?.length > 0 || trainer.transformations?.length > 0) &&
           (!availableNow || Number(trainer.capacity || 0) - Number(trainer.activeClients || 0) > 0) &&
@@ -139,7 +141,7 @@ export default function Discover() {
       if (sort === 'response') return Number(a.responseTimeHours || 999) - Number(b.responseTimeHours || 999);
       return Number(b.trustScore || 0) - Number(a.trustScore || 0);
     });
-  }, [trainers, deferredQuery, city, mode, gender, specialty, maxPrice, sort, verifiedOnly, hasTransformations, availableNow, packagesApproved]);
+  }, [trainers, deferredQuery, city, mode, gender, specialty, maxPrice, budgetActive, sort, verifiedOnly, hasTransformations, availableNow, packagesApproved]);
 
   const comparedTrainers = compare.map((id) => trainers.find((trainer) => trainer.id === id)).filter(Boolean);
   const budgetPercent = Math.min(100, Math.max(0, ((maxPrice - minBudget) / (maxBudget - minBudget)) * 100));
@@ -151,6 +153,7 @@ export default function Discover() {
     setGender('All');
     setSpecialty('All');
     setMaxPrice(maxBudget);
+    setBudgetActive(false);
     setSort('recommended');
     setVerifiedOnly(false);
     setHasTransformations(false);
@@ -264,12 +267,12 @@ export default function Discover() {
             <FilterSelect label="Mode" value={mode} onChange={setMode} options={modes} />
             <FilterSelect label="Specialty" value={specialty} onChange={setSpecialty} options={specialties} />
             <label className="rounded-xl border border-slate-700/50 bg-surface-high/50 px-4 py-3 xl:col-span-2">
-              <span className="text-xs font-medium text-slate-500">Budget: PKR {maxPrice.toLocaleString()}/mo</span>
+              <span className="text-xs font-medium text-slate-500">{budgetActive ? `Budget: PKR ${maxPrice.toLocaleString()}/mo` : 'Budget: Any'}</span>
               <div className="relative mt-3 h-5">
                 <div className="absolute top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-slate-700/50" />
                 <div className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-primary" style={{ width: `${budgetPercent}%` }} />
                 <div className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-background bg-primary" style={{ left: `calc(${budgetPercent}% - 0.5rem)` }} />
-                <input type="range" min={minBudget} max={maxBudget} step="1000" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                <input type="range" min={minBudget} max={maxBudget} step="1000" value={maxPrice} onChange={(e) => { setMaxPrice(Number(e.target.value)); setBudgetActive(true); }} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
               </div>
             </label>
           </div>
