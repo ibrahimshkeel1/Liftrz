@@ -341,6 +341,11 @@ export default function Discover() {
                         <ShieldCheck className="h-3 w-3" /> CNIC
                       </span>
                     )}
+                    {trainer.certificationsStatus === 'approved' && (
+                      <span className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm" title="Certificates verified">
+                        <CheckCircle2 className="h-3 w-3" /> CERT
+                      </span>
+                    )}
                     <span className="rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
                       {trainer.gender === 'Female' ? 'Female' : 'Male'}
                     </span>

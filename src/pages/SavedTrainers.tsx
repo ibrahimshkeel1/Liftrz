@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Heart, MapPin, ShieldCheck, Star, Trash2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Heart, MapPin, ShieldCheck, Star, Trash2 } from 'lucide-react';
 import { api } from '../utils/api';
 import SEO from '../components/SEO';
 import EmptyState from '../components/EmptyState';
@@ -69,11 +69,18 @@ export default function SavedTrainers() {
                       {trainer.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  {trainer.identityStatus === 'approved' && (
-                    <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full border border-success/40 bg-success/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm" title="CNIC verified">
-                      <ShieldCheck className="h-3 w-3" /> CNIC
-                    </span>
-                  )}
+                  <div className="absolute left-3 top-3 flex max-w-[calc(100%-5rem)] flex-wrap items-center gap-2">
+                    {trainer.identityStatus === 'approved' && (
+                      <span className="flex items-center gap-1 rounded-full border border-success/40 bg-success/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm" title="CNIC verified">
+                        <ShieldCheck className="h-3 w-3" /> CNIC
+                      </span>
+                    )}
+                    {trainer.certificationsStatus === 'approved' && (
+                      <span className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm" title="Certificates verified">
+                        <CheckCircle2 className="h-3 w-3" /> CERT
+                      </span>
+                    )}
+                  </div>
                   <button onClick={() => remove(trainer.id)} className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white backdrop-blur-sm transition-colors hover:bg-red-500">
                     <Trash2 className="h-4 w-4" />
                   </button>
