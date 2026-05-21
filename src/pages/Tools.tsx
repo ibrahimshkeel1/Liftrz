@@ -31,8 +31,10 @@ export default function Tools() {
 
 /* ─── helpers ─── */
 const toCm = (inches: number) => inches * 2.54;
-const toKg = (lbs: number) => lbs * 0.453592;
+const toKg = (lbs: number) => lbs * 0.45359237;
 const ftInToCm = (ft: number, inc: number) => (ft * 12 + inc) * 2.54;
+const round1 = (value: number) => Math.round(value * 10) / 10;
+const positive = (value: number) => Number.isFinite(value) && value > 0;
 
 /* ─── BMI ─── */
 function BMICalculator() {
@@ -55,7 +57,7 @@ function BMICalculator() {
     } else {
       h = ftInToCm(Number(heightFt), Number(heightIn)) / 100;
     }
-    if (!w || !h) return;
+    if (!positive(w) || !positive(h)) return;
 
     const bmi = w / (h * h);
     let label = '';
@@ -63,7 +65,7 @@ function BMICalculator() {
     else if (bmi < 25) label = 'Normal weight';
     else if (bmi < 30) label = 'Overweight';
     else label = 'Obese';
-    setResult({ bmi: Math.round(bmi * 10) / 10, label });
+    setResult({ bmi: round1(bmi), label });
   };
 
   return (
@@ -80,7 +82,7 @@ function BMICalculator() {
             <button type="button" onClick={() => setWeightUnit('kg')} className={`rounded-lg px-3 py-1 text-[11px] font-semibold ${weightUnit === 'kg' ? 'bg-primary text-white' : 'border border-slate-700/50 text-slate-400'}`}>kg</button>
             <button type="button" onClick={() => setWeightUnit('lbs')} className={`rounded-lg px-3 py-1 text-[11px] font-semibold ${weightUnit === 'lbs' ? 'bg-primary text-white' : 'border border-slate-700/50 text-slate-400'}`}>lbs</button>
           </div>
-          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={weightUnit === 'kg' ? '70' : '154'} />
+          <input type="number" step="any" min="0" value={weight} onChange={(e) => setWeight(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={weightUnit === 'kg' ? '70' : '154'} />
         </div>
 
         {/* Height */}
@@ -90,11 +92,11 @@ function BMICalculator() {
             <button type="button" onClick={() => setHeightMode('ft')} className={`rounded-lg px-3 py-1 text-[11px] font-semibold ${heightMode === 'ft' ? 'bg-primary text-white' : 'border border-slate-700/50 text-slate-400'}`}>ft + in</button>
           </div>
           {heightMode === 'cm' ? (
-            <input type="number" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="175" />
+            <input type="number" step="any" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="175" />
           ) : (
             <div className="flex gap-2">
-              <input type="number" value={heightFt} onChange={(e) => setHeightFt(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="5" />
-              <input type="number" value={heightIn} onChange={(e) => setHeightIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="9" />
+              <input type="number" step="any" min="0" value={heightFt} onChange={(e) => setHeightFt(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="5" />
+              <input type="number" step="any" min="0" value={heightIn} onChange={(e) => setHeightIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="9" />
             </div>
           )}
         </div>
@@ -163,7 +165,7 @@ function TDEECalculator() {
     else h = ftInToCm(Number(heightFt), Number(heightFtIn));
     const a = Number(age);
     const act = Number(activity);
-    if (!w || !h || !a) return;
+    if (!positive(w) || !positive(h) || !positive(a) || !positive(act)) return;
     const bmr = gender === 'male' ? (10 * w) + (6.25 * h) - (5 * a) + 5 : (10 * w) + (6.25 * h) - (5 * a) - 161;
     setResult(Math.round(bmr * act));
   };
@@ -187,7 +189,7 @@ function TDEECalculator() {
             <button type="button" onClick={() => setWeightUnit('kg')} className={`rounded-lg px-3 py-1 text-[11px] font-semibold ${weightUnit === 'kg' ? 'bg-primary text-white' : 'border border-slate-700/50 text-slate-400'}`}>kg</button>
             <button type="button" onClick={() => setWeightUnit('lbs')} className={`rounded-lg px-3 py-1 text-[11px] font-semibold ${weightUnit === 'lbs' ? 'bg-primary text-white' : 'border border-slate-700/50 text-slate-400'}`}>lbs</button>
           </div>
-          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={weightUnit === 'kg' ? '70' : '154'} />
+          <input type="number" step="any" min="0" value={weight} onChange={(e) => setWeight(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={weightUnit === 'kg' ? '70' : '154'} />
         </div>
 
         {/* Height */}
@@ -198,22 +200,22 @@ function TDEECalculator() {
             <button type="button" onClick={() => setHeightMode('ft')} className={`rounded-lg px-3 py-1 text-[11px] font-semibold ${heightMode === 'ft' ? 'bg-primary text-white' : 'border border-slate-700/50 text-slate-400'}`}>ft + in</button>
           </div>
           {heightMode === 'cm' && (
-            <input type="number" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="175" />
+            <input type="number" step="any" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="175" />
           )}
           {heightMode === 'in' && (
-            <input type="number" value={heightIn} onChange={(e) => setHeightIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="69" />
+            <input type="number" step="any" min="0" value={heightIn} onChange={(e) => setHeightIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="69" />
           )}
           {heightMode === 'ft' && (
             <div className="flex gap-2">
-              <input type="number" value={heightFt} onChange={(e) => setHeightFt(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="5" />
-              <input type="number" value={heightFtIn} onChange={(e) => setHeightFtIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="9" />
+              <input type="number" step="any" min="0" value={heightFt} onChange={(e) => setHeightFt(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="5" />
+              <input type="number" step="any" min="0" value={heightFtIn} onChange={(e) => setHeightFtIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="9" />
             </div>
           )}
         </div>
 
         <label className="grid gap-1.5">
           <span className="text-xs font-medium text-slate-500">Age</span>
-          <input type="number" value={age} onChange={(e) => setAge(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="30" />
+          <input type="number" step="any" min="0" value={age} onChange={(e) => setAge(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="30" />
         </label>
         <label className="grid gap-1.5">
           <span className="text-xs font-medium text-slate-500">Activity</span>
@@ -284,15 +286,17 @@ function BodyFatCalculator() {
       n = toCm(n);
       hi = toCm(hi);
     }
-    if (!w || !n || !h) return;
+    if (!positive(w) || !positive(n) || !positive(h)) return;
     let bf = 0;
     if (gender === 'male') {
+      if (w <= n) return;
       bf = 495 / (1.0324 - 0.19077 * Math.log10(w - n) + 0.15456 * Math.log10(h)) - 450;
     } else {
-      if (!hi) return;
+      if (!positive(hi) || w + hi <= n) return;
       bf = 495 / (1.29579 - 0.35004 * Math.log10(w + hi - n) + 0.22100 * Math.log10(h)) - 450;
     }
-    setResult(Math.round(bf * 10) / 10);
+    if (!Number.isFinite(bf)) return;
+    setResult(round1(bf));
   };
 
   return (
@@ -315,11 +319,11 @@ function BodyFatCalculator() {
 
         <label className="grid gap-1.5">
           <span className="text-xs font-medium text-slate-500">Waist ({unit})</span>
-          <input type="number" value={waist} onChange={(e) => setWaist(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={unit === 'cm' ? '80' : '31'} />
+          <input type="number" step="any" min="0" value={waist} onChange={(e) => setWaist(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={unit === 'cm' ? '80' : '31'} />
         </label>
         <label className="grid gap-1.5">
           <span className="text-xs font-medium text-slate-500">Neck ({unit})</span>
-          <input type="number" value={neck} onChange={(e) => setNeck(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={unit === 'cm' ? '38' : '15'} />
+          <input type="number" step="any" min="0" value={neck} onChange={(e) => setNeck(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={unit === 'cm' ? '38' : '15'} />
         </label>
         {/* Height */}
         <div className="grid gap-1.5">
@@ -330,22 +334,22 @@ function BodyFatCalculator() {
             <button type="button" onClick={() => setHeightMode('ft')} className={`rounded-lg px-3 py-1 text-[11px] font-semibold ${heightMode === 'ft' ? 'bg-primary text-white' : 'border border-slate-700/50 text-slate-400'}`}>ft + in</button>
           </div>
           {heightMode === 'cm' && (
-            <input type="number" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="175" />
+            <input type="number" step="any" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="175" />
           )}
           {heightMode === 'in' && (
-            <input type="number" value={heightIn} onChange={(e) => setHeightIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="69" />
+            <input type="number" step="any" min="0" value={heightIn} onChange={(e) => setHeightIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="69" />
           )}
           {heightMode === 'ft' && (
             <div className="flex gap-2">
-              <input type="number" value={heightFt} onChange={(e) => setHeightFt(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="5" />
-              <input type="number" value={heightFtIn} onChange={(e) => setHeightFtIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="9" />
+              <input type="number" step="any" min="0" value={heightFt} onChange={(e) => setHeightFt(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="5" />
+              <input type="number" step="any" min="0" value={heightFtIn} onChange={(e) => setHeightFtIn(e.target.value)} className="w-full rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder="9" />
             </div>
           )}
         </div>
         {gender === 'female' && (
           <label className="grid gap-1.5">
             <span className="text-xs font-medium text-slate-500">Hip ({unit})</span>
-            <input type="number" value={hip} onChange={(e) => setHip(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={unit === 'cm' ? '95' : '37'} />
+            <input type="number" step="any" min="0" value={hip} onChange={(e) => setHip(e.target.value)} className="rounded-xl border border-slate-700/50 bg-surface-high p-3 text-sm text-white outline-none" placeholder={unit === 'cm' ? '95' : '37'} />
           </label>
         )}
         <button type="submit" className="rounded-full bg-primary py-3 text-xs font-semibold text-white">Calculate Body Fat</button>

@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { CalendarCheck, CheckCircle2, Copy, Loader2, LockKeyhole, MapPin, MessageCircle, ShieldCheck, Star, Upload, Video, UserRoundCheck, Clock, Award, Languages } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, ChevronLeft, ChevronRight, Copy, LockKeyhole, MapPin, MessageCircle, ShieldCheck, Star, Upload, UserRoundCheck, Clock, Award, Languages, X } from 'lucide-react';
 import { api } from '../utils/api';
 import { useSession } from '../utils/session';
 import SEO from '../components/SEO';
@@ -45,6 +45,7 @@ export default function TrainerProfile() {
     transactionId: ''
   });
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'uploading' | 'submitting' | 'success'>('idle');
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const clientSession = session?.user.role === 'client' ? session.user : null;
 
   const initials = trainer?.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'TR';
@@ -214,6 +215,30 @@ export default function TrainerProfile() {
   const monthlyPrice = approvedPackagePrices.length
     ? Math.min(...approvedPackagePrices)
     : Math.round(Number(String(trainer.price || 0).replace(/,/g, '')) * 12);
+  const lightboxImages = [
+    ...(trainer.image ? [{ src: trainer.image, alt: `${trainer.name} profile photo`, caption: `${trainer.name} profile photo` }] : []),
+    ...(trainer.profileGallery || []).slice(0, 5).filter((photo: any) => photo.image).map((photo: any, index: number) => ({
+      src: photo.image,
+      alt: photo.caption || `${trainer.name} profile photo ${index + 1}`,
+      caption: photo.caption || 'Profile photo'
+    })),
+    ...(trainer.transformationImages || []).slice(0, 10).flatMap((photo: any, index: number) => [
+      ...(photo.beforeImage ? [{
+        src: photo.beforeImage,
+        alt: `Before ${photo.caption || `${trainer.name} transformation ${index + 1}`}`,
+        caption: `Before - ${photo.caption || 'Client transformation'}`
+      }] : []),
+      ...((photo.afterImage || photo.image) ? [{
+        src: photo.afterImage || photo.image,
+        alt: photo.caption || `${trainer.name} transformation ${index + 1}`,
+        caption: `After - ${photo.caption || 'Client transformation'}`
+      }] : [])
+    ])
+  ];
+  const openLightbox = (src: string) => {
+    const index = lightboxImages.findIndex((image) => image.src === src);
+    if (index !== -1) setLightboxIndex(index);
+  };
 
   return (
     <PageShell>
@@ -237,7 +262,9 @@ export default function TrainerProfile() {
           <div>
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface-high flex items-center justify-center">
               {!imgError && trainer.image ? (
-                <img src={trainer.image} alt={`${trainer.name} verified personal trainer in ${trainer.city}`} className="h-full w-full object-cover" referrerPolicy="no-referrer" onError={() => setImgError(true)} />
+                <button type="button" onClick={() => openLightbox(trainer.image)} className="h-full w-full cursor-zoom-in" aria-label="Open profile photo full screen">
+                  <img src={trainer.image} alt={`${trainer.name} verified personal trainer in ${trainer.city}`} className="h-full w-full object-cover" referrerPolicy="no-referrer" onError={() => setImgError(true)} />
+                </button>
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center bg-surface-high text-primary">
                   <span className="text-6xl font-black">{initials}</span>
@@ -325,9 +352,9 @@ export default function TrainerProfile() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {trainer.profileGallery.slice(0, 5).map((photo: any, index: number) => (
                 <article key={`${photo.image}-${index}`} className="overflow-hidden rounded-2xl border border-slate-700/50 bg-surface">
-                  <div className="aspect-square bg-surface-high">
+                  <button type="button" onClick={() => openLightbox(photo.image)} className="aspect-square w-full cursor-zoom-in bg-surface-high" aria-label="Open profile photo full screen">
                     <img src={photo.image} alt={photo.caption || `${trainer.name} profile photo ${index + 1}`} className="h-full w-full object-cover" />
-                  </div>
+                  </button>
                   <p className="min-h-14 px-4 py-3 text-sm leading-6 text-slate-300">{photo.caption || 'Profile photo'}</p>
                 </article>
               ))}
@@ -343,15 +370,15 @@ export default function TrainerProfile() {
                 <article key={`${photo.image}-${index}`} className="overflow-hidden rounded-2xl border border-slate-700/50 bg-surface">
                   <div className="grid grid-cols-2 bg-surface-high">
                     {photo.beforeImage && (
-                      <div className="relative aspect-square">
+                      <button type="button" onClick={() => openLightbox(photo.beforeImage)} className="relative aspect-square cursor-zoom-in" aria-label="Open before photo full screen">
                         <img src={photo.beforeImage} alt={`Before ${photo.caption || `${trainer.name} transformation ${index + 1}`}`} className="h-full w-full object-cover" />
                         <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">Before</span>
-                      </div>
+                      </button>
                     )}
-                    <div className="relative aspect-square">
+                    <button type="button" onClick={() => openLightbox(photo.afterImage || photo.image)} className="relative aspect-square cursor-zoom-in" aria-label="Open after photo full screen">
                       <img src={photo.afterImage || photo.image} alt={photo.caption || `${trainer.name} transformation ${index + 1}`} className="h-full w-full object-cover" />
                       <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">After</span>
-                    </div>
+                    </button>
                   </div>
                   <p className="min-h-16 px-4 py-3 text-sm leading-6 text-slate-300">{photo.caption || 'Client transformation'}</p>
                 </article>
@@ -604,6 +631,14 @@ export default function TrainerProfile() {
           </div>
         </section>
       </PageContainer>
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          images={lightboxImages}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onMove={(nextIndex) => setLightboxIndex(nextIndex)}
+        />
+      )}
       <div className="fixed inset-x-0 bottom-20 z-40 border-t border-slate-700/50 bg-background/95 p-3 backdrop-blur-xl md:hidden">
         <div className="mx-auto flex max-w-xl gap-2">
           <a href="#inquiry" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white">
@@ -615,6 +650,67 @@ export default function TrainerProfile() {
         </div>
       </div>
     </PageShell>
+  );
+}
+
+type LightboxImage = { src: string; alt: string; caption?: string };
+
+function ImageLightbox({
+  images,
+  index,
+  onClose,
+  onMove
+}: {
+  images: LightboxImage[];
+  index: number;
+  onClose: () => void;
+  onMove: (index: number) => void;
+}) {
+  const image = images[index];
+  const count = images.length;
+  const canNavigate = count > 1;
+  const previous = () => onMove((index - 1 + count) % count);
+  const next = () => onMove((index + 1) % count);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+      if (event.key === 'ArrowLeft' && canNavigate) previous();
+      if (event.key === 'ArrowRight' && canNavigate) next();
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [index, count, canNavigate]);
+
+  if (!image) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/95 text-white">
+      <button type="button" onClick={onClose} className="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur transition-colors hover:bg-white/20" aria-label="Close full screen image">
+        <X className="h-5 w-5" />
+      </button>
+      {canNavigate && (
+        <>
+          <button type="button" onClick={previous} className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur transition-colors hover:bg-white/20" aria-label="Previous image">
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button type="button" onClick={next} className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur transition-colors hover:bg-white/20" aria-label="Next image">
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </>
+      )}
+      <div className="flex h-full w-full items-center justify-center p-4 md:p-8">
+        <img src={image.src} alt={image.alt} className="max-h-[86vh] max-w-full object-contain" referrerPolicy="no-referrer" />
+      </div>
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent px-5 pb-5 pt-16 text-center">
+        <p className="text-sm font-semibold">{image.caption || image.alt}</p>
+        {count > 1 && <p className="mt-1 text-xs text-white/60">{index + 1} / {count}</p>}
+      </div>
+    </div>
   );
 }
 
