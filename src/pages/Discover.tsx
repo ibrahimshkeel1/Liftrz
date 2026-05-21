@@ -21,6 +21,8 @@ const sortOptions = [
   { label: 'Fastest response', value: 'response' }
 ];
 
+const minBudget = 1000;
+const baseMaxBudget = 50000;
 const toNumber = (value: number | string | undefined) => Number(String(value || 0).replace(/,/g, ''));
 const toSessionPrice = (trainer: any) => toNumber(trainer.sessionPrice ?? trainer.price);
 const toMonthlyEstimate = (trainer: any) => toNumber(trainer.monthlyPrice ?? trainer.monthlyPackagePrice) || Math.round(toSessionPrice(trainer) * 12);
@@ -35,7 +37,7 @@ export default function Discover() {
   const [mode, setMode] = useState(searchParams.get('mode') || 'All');
   const [gender, setGender] = useState(searchParams.get('gender') || 'All');
   const [specialty, setSpecialty] = useState(searchParams.get('specialty') || 'All');
-  const [maxPrice, setMaxPrice] = useState(Number(searchParams.get('maxPrice') || 30000));
+  const [maxPrice, setMaxPrice] = useState(Number(searchParams.get('maxPrice') || baseMaxBudget));
   const [sort, setSort] = useState('recommended');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [hasTransformations, setHasTransformations] = useState(false);
@@ -49,7 +51,7 @@ export default function Discover() {
     phone: '',
     city: searchParams.get('city') || 'Lahore',
     goal: searchParams.get('specialty') || 'Fat loss',
-    budget: String(Number(searchParams.get('maxPrice') || 30000)),
+    budget: String(Number(searchParams.get('maxPrice') || baseMaxBudget)),
     message: ''
   });
   const deferredQuery = useDeferredValue(query);
@@ -64,6 +66,16 @@ export default function Discover() {
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load trainers'))
       .finally(() => setLoading(false));
   }, []);
+
+  const maxBudget = useMemo(() => {
+    const highestTrainerBudget = trainers.reduce((highest, trainer) => Math.max(highest, toMonthlyEstimate(trainer)), baseMaxBudget);
+    return Math.ceil(highestTrainerBudget / 1000) * 1000;
+  }, [trainers]);
+
+  useEffect(() => {
+    if (searchParams.has('maxPrice')) return;
+    setMaxPrice(maxBudget);
+  }, [maxBudget, searchParams]);
 
   useEffect(() => {
     api.trackEvent({
@@ -116,7 +128,7 @@ export default function Discover() {
   }, [trainers, deferredQuery, city, mode, gender, specialty, maxPrice, sort, verifiedOnly, hasTransformations, availableNow, packagesApproved]);
 
   const comparedTrainers = compare.map((id) => trainers.find((trainer) => trainer.id === id)).filter(Boolean);
-  const budgetPercent = ((maxPrice - 1000) / (50000 - 1000)) * 100;
+  const budgetPercent = ((maxPrice - minBudget) / (maxBudget - minBudget)) * 100;
 
   const resetFilters = () => {
     setQuery('');
@@ -124,7 +136,7 @@ export default function Discover() {
     setMode('All');
     setGender('All');
     setSpecialty('All');
-    setMaxPrice(30000);
+    setMaxPrice(maxBudget);
     setSort('recommended');
     setVerifiedOnly(false);
     setHasTransformations(false);
@@ -243,7 +255,7 @@ export default function Discover() {
                 <div className="absolute top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-slate-700/50" />
                 <div className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-primary" style={{ width: `${budgetPercent}%` }} />
                 <div className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-background bg-primary" style={{ left: `calc(${budgetPercent}% - 0.5rem)` }} />
-                <input type="range" min="1000" max="50000" step="1000" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                <input type="range" min={minBudget} max={maxBudget} step="1000" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
               </div>
             </label>
           </div>
