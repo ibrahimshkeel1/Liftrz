@@ -806,7 +806,8 @@ app.post('/api/trainers', route(async (req, res) => {
     area: req.body.area || '',
     gender: req.body.gender || '',
     clientGenders: Array.isArray(req.body.clientGenders) ? req.body.clientGenders : ['Male', 'Female'],
-    clientAgeGroups: Array.isArray(req.body.clientAgeGroups) ? req.body.clientAgeGroups : ['Adults'],
+    clientAgeMin: sanitizeString(req.body.clientAgeMin, 3),
+    clientAgeMax: sanitizeString(req.body.clientAgeMax, 3),
     languages: req.body.languages || ['Urdu'],
     serviceModes: req.body.serviceModes || ['Online'],
     experienceLevel: req.body.experienceLevel || 'Intermediate',
@@ -898,7 +899,7 @@ app.patch('/api/trainers/:id/profile', requireAuth, route(async (req, res) => {
   const now = new Date().toISOString();
   const allowed = new Set([
     'name', 'phone', 'contactPhone', 'whatsapp', 'email', 'city', 'location', 'area', 'gender',
-    'headline', 'clientGenders', 'clientAgeGroups',
+    'headline', 'clientGenders', 'clientAgeMin', 'clientAgeMax',
     'languages', 'specialty', 'goals', 'serviceModes', 'bio', 'price', 'capacity', 'image',
     'availableDays', 'availableTimeSlots', 'homeVisitAreas', 'availabilityNote',
     'cnicNumber', 'cnicFrontImage', 'cnicBackImage',

@@ -308,7 +308,7 @@ export default function TrainerProfile() {
             <div className="mt-6 space-y-3 text-sm text-slate-400">
               <div className="flex items-center gap-2"><UserRoundCheck className="h-4 w-4 text-primary" /> {trainer.verificationLevel || 'CNIC verified'}</div>
               <div className="flex items-center gap-2"><UserRoundCheck className="h-4 w-4 text-primary" /> Trains {trainer.clientGenders?.length ? trainer.clientGenders.join(' and ') : 'male and female'} clients</div>
-              <div className="flex items-center gap-2"><CalendarCheck className="h-4 w-4 text-primary" /> Ages: {trainer.clientAgeGroups?.length ? trainer.clientAgeGroups.join(', ') : 'All age groups'}</div>
+              <div className="flex items-center gap-2"><CalendarCheck className="h-4 w-4 text-primary" /> Ages: {formatClientAgeRange(trainer)}</div>
               <div className="flex items-center gap-2"><Languages className="h-4 w-4 text-primary" /> {trainer.languages?.join(', ') || 'Urdu, English'}</div>
               <div className="flex items-center gap-2"><CalendarCheck className="h-4 w-4 text-primary" /> {trainer.serviceModes?.join(', ') || 'Gym, Home Visit'}</div>
               <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> {availableSlots > 0 ? `${availableSlots} client slots open` : 'Waitlist only right now'}</div>
@@ -756,6 +756,15 @@ function CopyLinkButton({ url }: { url: string }) {
       <Copy className="h-3.5 w-3.5" /> {copied ? 'Copied' : 'Copy link'}
     </button>
   );
+}
+
+function formatClientAgeRange(trainer: any) {
+  const min = trainer.clientAgeMin;
+  const max = trainer.clientAgeMax;
+  if (min && max) return `${min}-${max}`;
+  if (min) return `${min}+`;
+  if (max) return `up to ${max}`;
+  return 'All age groups';
 }
 
 function Input({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (value: string) => void; type?: string }) {

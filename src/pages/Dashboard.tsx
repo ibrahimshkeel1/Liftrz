@@ -13,7 +13,6 @@ import { getAreasForCity } from '../utils/areas';
 
 const money = (value: number) => `PKR ${Number(value || 0).toLocaleString()}`;
 const clientGenderOptions = ['Male', 'Female'];
-const clientAgeGroupOptions = ['Kids', 'Teens', 'Adults', 'Seniors'];
 const paymentAccount = {
   bankName: 'nayapay',
   accountNumber: '03214026075',
@@ -76,7 +75,8 @@ export default function Dashboard() {
         area: trainerData.area || '',
         gender: trainerData.gender || '',
         clientGenders: Array.isArray(trainerData.clientGenders) ? trainerData.clientGenders : ['Male', 'Female'],
-        clientAgeGroups: Array.isArray(trainerData.clientAgeGroups) ? trainerData.clientAgeGroups : ['Adults'],
+        clientAgeMin: trainerData.clientAgeMin || '',
+        clientAgeMax: trainerData.clientAgeMax || '',
         languages: Array.isArray(trainerData.languages) ? trainerData.languages.join(', ') : '',
         goals: trainerData.goals || [],
         serviceModes: trainerData.serviceModes || [],
@@ -228,7 +228,7 @@ export default function Dashboard() {
     }));
   };
 
-  const toggleProfileList = (key: 'clientGenders' | 'clientAgeGroups', value: string) => {
+  const toggleProfileList = (key: 'clientGenders', value: string) => {
     setProfileForm((current: any) => {
       const values = Array.isArray(current[key]) ? current[key] : [];
       return {
@@ -344,7 +344,10 @@ export default function Dashboard() {
                 <Input label="Service modes" value={(profileForm.serviceModes || []).join(', ')} onChange={(value) => setProfileForm({ ...profileForm, serviceModes: value.split(',').map((item) => item.trim()).filter(Boolean) })} placeholder="Gym, Home Visit, Online" />
               </div>
               <MultiChoice label="Client genders you train" items={clientGenderOptions} values={profileForm.clientGenders || []} onToggle={(item) => toggleProfileList('clientGenders', item)} helper="Select both if you train male and female clients." />
-              <MultiChoice label="Client age groups you train" items={clientAgeGroupOptions} values={profileForm.clientAgeGroups || []} onToggle={(item) => toggleProfileList('clientAgeGroups', item)} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input label="Minimum client age" value={profileForm.clientAgeMin || ''} onChange={(value) => setProfileForm({ ...profileForm, clientAgeMin: value.replace(/\D/g, '') })} placeholder="18" />
+                <Input label="Maximum client age" value={profileForm.clientAgeMax || ''} onChange={(value) => setProfileForm({ ...profileForm, clientAgeMax: value.replace(/\D/g, '') })} placeholder="65" />
+              </div>
               <button onClick={() => saveProfileSection('basic', {
                 name: profileForm.name,
                 headline: profileForm.headline || 'Personal Trainer',
@@ -353,7 +356,8 @@ export default function Dashboard() {
                 area: profileForm.area,
                 gender: profileForm.gender,
                 clientGenders: profileForm.clientGenders,
-                clientAgeGroups: profileForm.clientAgeGroups,
+                clientAgeMin: profileForm.clientAgeMin,
+                clientAgeMax: profileForm.clientAgeMax,
                 languages: String(profileForm.languages || '').split(',').map((item) => item.trim()).filter(Boolean),
                 goals: profileForm.goals,
                 specialty: profileForm.specialty || profileForm.goals?.[0] || trainer.specialty,
