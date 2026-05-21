@@ -761,9 +761,9 @@ function CopyLinkButton({ url }: { url: string }) {
 function formatClientAgeRange(trainer: any) {
   const min = trainer.clientAgeMin;
   const max = trainer.clientAgeMax;
-  if (min && max) return `${min}-${max}`;
-  if (min) return `${min}+`;
-  if (max) return `up to ${max}`;
+  if (min && max) return `from ${min} to ${max} years`;
+  if (min) return `from ${min}+ years`;
+  if (max) return `up to ${max} years`;
   return 'All age groups';
 }
 
