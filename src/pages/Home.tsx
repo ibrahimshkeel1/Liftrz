@@ -8,7 +8,7 @@ import { MotionCard, Reveal } from '../components/Motion';
 const cities = ['Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Gujranwala', 'Sialkot'];
 const goals = ['Lose Weight', 'Build Muscle', 'Wedding Prep', 'Strength', 'Yoga', 'Rehab'];
 const minBudget = 5000;
-const maxBudget = 50000;
+const maxBudget = 100000;
 
 const popularSearches = [
   { label: 'Personal trainer Lahore', href: '/personal-trainer-lahore' },
@@ -24,7 +24,7 @@ const toNumber = (value: number | string | undefined) => Number(String(value || 
 export default function Home() {
   const [city, setCity] = useState('Lahore');
   const [goal, setGoal] = useState('Lose Weight');
-  const [budget, setBudget] = useState(25000);
+  const [budget, setBudget] = useState(maxBudget);
   const [featured, setFeatured] = useState<any[]>([]);
 
   useEffect(() => {

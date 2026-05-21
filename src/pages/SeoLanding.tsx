@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, MapPin, Search, ShieldCheck, Star } from 'luc
 import SEO from '../components/SEO';
 import { api } from '../utils/api';
 import { HeroBlock, MetricCard, PageContainer, PageShell, SectionTitle, Surface } from '../components/premium';
+import { matchesCity, matchesGender, matchesMode, matchesSpecialty, toSessionPrice } from '../utils/trainerMatching';
 
 const baseUrl = 'https://liftrz.com';
 
@@ -292,12 +293,12 @@ export default function SeoLanding() {
 
   const matchingTrainers = useMemo(() => {
     return trainers.filter((trainer) => {
-      const cityMatch = !page.city || page.city === 'Online' || trainer.city === page.city;
-      const genderMatch = !page.gender || trainer.gender === page.gender;
-      const modeMatch = !page.mode || trainer.serviceModes?.includes(page.mode);
-      const specialtyMatch = !page.specialty || trainer.goals?.includes(page.specialty) || String(trainer.specialty || '').includes(page.specialty);
+      const cityMatch = !page.city || matchesCity(trainer, page.city);
+      const genderMatch = !page.gender || matchesGender(trainer, page.gender);
+      const modeMatch = !page.mode || matchesMode(trainer, page.mode);
+      const specialtyMatch = !page.specialty || matchesSpecialty(trainer, page.specialty);
       return cityMatch && genderMatch && modeMatch && specialtyMatch;
-    }).slice(0, 3);
+    });
   }, [page, trainers]);
 
   const discoverHref = `/discover?${new URLSearchParams({
@@ -379,13 +380,13 @@ export default function SeoLanding() {
         </Surface>
 
         <Surface className="p-6">
-          <h2 className="text-3xl editorial-header font-bold mb-5">Featured matches</h2>
+          <h2 className="text-3xl editorial-header font-bold mb-5">Live trainers in this search</h2>
           <div className="grid md:grid-cols-3 gap-3">
             {matchingTrainers.length > 0 ? matchingTrainers.map((trainer) => (
               <Link key={trainer.id} to={`/trainer/${trainer.slug || trainer.id}`} className="rounded-xl border border-slate-700/50 bg-surface-high/80 p-4 hover:border-primary">
                 <h3 className="font-bold">{trainer.name}</h3>
                 <p className="text-xs text-muted mt-1">{trainer.city} / {trainer.specialty}</p>
-                <p className="text-primary text-sm mt-3">PKR {trainer.price}</p>
+                <p className="text-primary text-sm mt-3">PKR {toSessionPrice(trainer).toLocaleString()}</p>
               </Link>
             )) : (
               <div className="md:col-span-3 rounded-xl border border-primary/30 bg-primary/10 p-5">

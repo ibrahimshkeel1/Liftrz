@@ -8,11 +8,12 @@ import { SkeletonCard, SkeletonHero } from '../components/Skeleton';
 import { HeroBlock, InfoPill, PageContainer, PageShell, Surface } from '../components/premium';
 import { MotionCard, Reveal } from '../components/Motion';
 import { toggleFavorite } from '../utils/favorites';
+import { matchesCity, matchesGender, matchesMode, matchesSearch, matchesSpecialty, normalizeSpecialtyFilter, toMonthlyEstimate, toSessionPrice } from '../utils/trainerMatching';
 
 const cities = ['All', 'Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Gujranwala', 'Sialkot', 'Online'];
 const modes = ['All', 'Gym', 'Home Visit', 'Online', 'Studio'];
 const genders = ['All', 'Male', 'Female'];
-const specialties = ['All', 'Strength', 'Fat loss', 'Rehab', 'Yoga', 'Athletic Performance', 'Muscle gain', 'Online coaching'];
+const specialties = ['All', 'Strength', 'Fat loss', 'Rehab', 'Yoga', 'Athletic Performance', 'Muscle gain', 'Online coaching', 'Wedding Prep'];
 const sortOptions = [
   { label: 'Recommended', value: 'recommended' },
   { label: 'Highest rating', value: 'rating' },
@@ -22,22 +23,30 @@ const sortOptions = [
 ];
 
 const minBudget = 1000;
-const baseMaxBudget = 50000;
-const toNumber = (value: number | string | undefined) => Number(String(value || 0).replace(/,/g, ''));
-const toSessionPrice = (trainer: any) => toNumber(trainer.sessionPrice ?? trainer.price);
-const toMonthlyEstimate = (trainer: any) => toNumber(trainer.monthlyPrice ?? trainer.monthlyPackagePrice) || Math.round(toSessionPrice(trainer) * 12);
+const maxBudget = 100000;
+const optionFromParam = (value: string | null, options: string[], fallback = 'All') => {
+  if (!value) return fallback;
+  return options.find((option) => option.toLowerCase() === value.toLowerCase()) || fallback;
+};
+const specialtyFromParam = (value: string | null) => optionFromParam(normalizeSpecialtyFilter(value || 'All'), specialties);
+const budgetFromParam = (value: string | null) => {
+  const parsed = Number(value || maxBudget);
+  if (!Number.isFinite(parsed)) return maxBudget;
+  return Math.min(maxBudget, Math.max(minBudget, parsed));
+};
 
 export default function Discover() {
   const [searchParams] = useSearchParams();
+  const searchParamString = searchParams.toString();
   const [trainers, setTrainers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [city, setCity] = useState(searchParams.get('city') || 'All');
-  const [mode, setMode] = useState(searchParams.get('mode') || 'All');
-  const [gender, setGender] = useState(searchParams.get('gender') || 'All');
-  const [specialty, setSpecialty] = useState(searchParams.get('specialty') || 'All');
-  const [maxPrice, setMaxPrice] = useState(Number(searchParams.get('maxPrice') || baseMaxBudget));
+  const [city, setCity] = useState(optionFromParam(searchParams.get('city'), cities));
+  const [mode, setMode] = useState(optionFromParam(searchParams.get('mode'), modes));
+  const [gender, setGender] = useState(optionFromParam(searchParams.get('gender'), genders));
+  const [specialty, setSpecialty] = useState(specialtyFromParam(searchParams.get('specialty')));
+  const [maxPrice, setMaxPrice] = useState(budgetFromParam(searchParams.get('maxPrice')));
   const [sort, setSort] = useState('recommended');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [hasTransformations, setHasTransformations] = useState(false);
@@ -49,9 +58,9 @@ export default function Discover() {
   const [matchForm, setMatchForm] = useState({
     name: '',
     phone: '',
-    city: searchParams.get('city') || 'Lahore',
-    goal: searchParams.get('specialty') || 'Fat loss',
-    budget: String(Number(searchParams.get('maxPrice') || baseMaxBudget)),
+    city: optionFromParam(searchParams.get('city'), cities.filter((item) => item !== 'All'), 'Lahore'),
+    goal: specialtyFromParam(searchParams.get('specialty')) === 'All' ? 'Fat loss' : specialtyFromParam(searchParams.get('specialty')),
+    budget: String(budgetFromParam(searchParams.get('maxPrice'))),
     message: ''
   });
   const deferredQuery = useDeferredValue(query);
@@ -67,15 +76,23 @@ export default function Discover() {
       .finally(() => setLoading(false));
   }, []);
 
-  const maxBudget = useMemo(() => {
-    const highestTrainerBudget = trainers.reduce((highest, trainer) => Math.max(highest, toMonthlyEstimate(trainer)), baseMaxBudget);
-    return Math.ceil(highestTrainerBudget / 1000) * 1000;
-  }, [trainers]);
-
   useEffect(() => {
-    if (searchParams.has('maxPrice')) return;
-    setMaxPrice(maxBudget);
-  }, [maxBudget, searchParams]);
+    const nextCity = optionFromParam(searchParams.get('city'), cities);
+    const nextSpecialty = specialtyFromParam(searchParams.get('specialty'));
+    const nextBudget = budgetFromParam(searchParams.get('maxPrice'));
+    setQuery(searchParams.get('q') || '');
+    setCity(nextCity);
+    setMode(optionFromParam(searchParams.get('mode'), modes));
+    setGender(optionFromParam(searchParams.get('gender'), genders));
+    setSpecialty(nextSpecialty);
+    setMaxPrice(nextBudget);
+    setMatchForm((current) => ({
+      ...current,
+      city: nextCity === 'All' ? current.city : nextCity,
+      goal: nextSpecialty === 'All' ? current.goal : nextSpecialty,
+      budget: String(nextBudget)
+    }));
+  }, [searchParamString]);
 
   useEffect(() => {
     api.trackEvent({
@@ -91,15 +108,12 @@ export default function Discover() {
     const ranked = trainers
       .filter((trainer) => {
         const monthlyPrice = toMonthlyEstimate(trainer);
-        const search = `${trainer.name} ${trainer.specialty} ${trainer.city} ${trainer.area} ${trainer.goals?.join(' ')}`.toLowerCase();
-        const matchesCity = city === 'All' || trainer.city === city || trainer.location === city || (city === 'Online' && trainer.serviceModes?.includes('Online'));
-        const matchesSpecialty = specialty === 'All' || trainer.goals?.includes(specialty) || String(trainer.specialty || '').toLowerCase().includes(specialty.toLowerCase());
         return (
-          search.includes(deferredQuery.toLowerCase()) &&
-          matchesCity &&
-          (mode === 'All' || trainer.serviceModes?.includes(mode)) &&
-          (gender === 'All' || trainer.gender === gender) &&
-          matchesSpecialty &&
+          matchesSearch(trainer, deferredQuery) &&
+          matchesCity(trainer, city) &&
+          matchesMode(trainer, mode) &&
+          matchesGender(trainer, gender) &&
+          matchesSpecialty(trainer, specialty) &&
           monthlyPrice <= maxPrice &&
           (!verifiedOnly || trainer.verificationStatus === 'approved') &&
           (!hasTransformations || trainer.transformationImages?.length > 0 || trainer.transformations?.length > 0) &&
@@ -128,7 +142,7 @@ export default function Discover() {
   }, [trainers, deferredQuery, city, mode, gender, specialty, maxPrice, sort, verifiedOnly, hasTransformations, availableNow, packagesApproved]);
 
   const comparedTrainers = compare.map((id) => trainers.find((trainer) => trainer.id === id)).filter(Boolean);
-  const budgetPercent = ((maxPrice - minBudget) / (maxBudget - minBudget)) * 100;
+  const budgetPercent = Math.min(100, Math.max(0, ((maxPrice - minBudget) / (maxBudget - minBudget)) * 100));
 
   const resetFilters = () => {
     setQuery('');

@@ -316,6 +316,7 @@ const canAccessBooking = (user, booking) => (
   || (user?.role === 'trainer' && user.trainerId === booking?.trainerId)
   || (user?.role === 'client' && user.id === booking?.clientId)
 );
+const findTrainerByIdOrSlug = (db, lookupId) => db.trainers.find((trainer) => trainer.id === lookupId || trainer.slug === lookupId);
 const isFeaturedTrainer = (trainer) => {
   const stillActive = !trainer.featuredUntil || new Date(trainer.featuredUntil).getTime() >= Date.now();
   const paidApproved = trainer.featuredStatus === 'approved' && trainer.featuredPaymentStatus === 'verified';
@@ -1035,7 +1036,9 @@ app.put('/api/leads/:id', requireAuth, route(async (req, res) => {
 
 app.get('/api/trainers/:id/reviews', route(async (req, res) => {
   const db = await readDB();
-  res.json(db.reviews.filter((review) => review.trainerId === req.params.id && review.status !== 'rejected'));
+  const trainer = findTrainerByIdOrSlug(db, req.params.id);
+  if (!trainer) return res.status(404).json({ message: 'Trainer not found' });
+  res.json(db.reviews.filter((review) => review.trainerId === trainer.id && review.status !== 'rejected'));
 }));
 
 app.post('/api/reviews', requireAuth, route(async (req, res) => {
@@ -1067,8 +1070,10 @@ app.post('/api/reviews', requireAuth, route(async (req, res) => {
 
 app.get('/api/trainers/:id/protocols', route(async (req, res) => {
   const db = await readDB();
-  const canSeeDrafts = canAccessTrainer(req.currentUser, req.params.id);
-  res.json(db.protocols.filter((protocol) => protocol.trainerId === req.params.id && (canSeeDrafts || protocol.status === 'approved' || !protocol.status)));
+  const trainer = findTrainerByIdOrSlug(db, req.params.id);
+  if (!trainer) return res.status(404).json({ message: 'Trainer not found' });
+  const canSeeDrafts = canAccessTrainer(req.currentUser, trainer.id);
+  res.json(db.protocols.filter((protocol) => protocol.trainerId === trainer.id && (canSeeDrafts || protocol.status === 'approved' || !protocol.status)));
 }));
 
 app.post('/api/protocols', requireAuth, route(async (req, res) => {
