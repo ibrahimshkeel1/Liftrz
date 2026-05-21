@@ -290,7 +290,7 @@ export default function TrainerProfile() {
               {trainer.area ? `${trainer.area}, ${trainer.city}` : trainer.city}
             </div>
             <h1 className="editorial-header mt-2 text-4xl font-bold leading-[0.95] text-white md:text-5xl">{trainer.name}</h1>
-            <p className="mt-2 text-lg text-slate-400">{trainer.specialty}</p>
+            <p className="mt-2 text-lg text-slate-400">{trainer.headline || 'Personal Trainer'}</p>
 
             <div className="mt-5 flex flex-wrap gap-2">
               {trainer.goals?.map((goal: string) => (
@@ -307,6 +307,8 @@ export default function TrainerProfile() {
 
             <div className="mt-6 space-y-3 text-sm text-slate-400">
               <div className="flex items-center gap-2"><UserRoundCheck className="h-4 w-4 text-primary" /> {trainer.verificationLevel || 'CNIC verified'}</div>
+              <div className="flex items-center gap-2"><UserRoundCheck className="h-4 w-4 text-primary" /> Trains {trainer.clientGenders?.length ? trainer.clientGenders.join(' and ') : 'male and female'} clients</div>
+              <div className="flex items-center gap-2"><CalendarCheck className="h-4 w-4 text-primary" /> Ages: {trainer.clientAgeGroups?.length ? trainer.clientAgeGroups.join(', ') : 'All age groups'}</div>
               <div className="flex items-center gap-2"><Languages className="h-4 w-4 text-primary" /> {trainer.languages?.join(', ') || 'Urdu, English'}</div>
               <div className="flex items-center gap-2"><CalendarCheck className="h-4 w-4 text-primary" /> {trainer.serviceModes?.join(', ') || 'Gym, Home Visit'}</div>
               <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> {availableSlots > 0 ? `${availableSlots} client slots open` : 'Waitlist only right now'}</div>

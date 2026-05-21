@@ -320,6 +320,7 @@ export default function Discover() {
             const isAvailable = availableSlots > 0;
             const startingPrice = toStartingPrice(trainer);
             const monthlyEstimate = toMonthlyEstimate(trainer);
+            const headline = trainer.headline || 'Personal Trainer';
 
             return (
               <div key={trainer.id}>
@@ -388,7 +389,7 @@ export default function Discover() {
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
                       <h2 className="text-xl font-bold text-white">{trainer.name}</h2>
-                      <p className="mt-0.5 text-sm text-slate-400">{trainer.specialty}</p>
+                      <p className="mt-0.5 text-sm text-slate-400">{headline}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-primary">{startingPrice > 0 ? `PKR ${startingPrice.toLocaleString()}` : 'Ask'}</p>
@@ -469,7 +470,7 @@ export default function Discover() {
                   </div>
                   <div className="p-5">
                     <h2 className="text-xl font-bold text-white">{trainer.name}</h2>
-                    <p className="mt-0.5 text-sm text-slate-400">{trainer.specialty} - {trainer.city}</p>
+                    <p className="mt-0.5 text-sm text-slate-400">{trainer.headline || 'Personal Trainer'} - {trainer.city}</p>
                     <Link to={`/trainer/${trainer.id}`} className="mt-4 flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white hover:bg-primary-dark">View Profile</Link>
                   </div>
                 </article>

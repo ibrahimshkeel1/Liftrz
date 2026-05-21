@@ -12,6 +12,8 @@ import { HeroBlock, MetricCard, PageContainer, PageShell, Surface } from '../com
 import { getAreasForCity } from '../utils/areas';
 
 const money = (value: number) => `PKR ${Number(value || 0).toLocaleString()}`;
+const clientGenderOptions = ['Male', 'Female'];
+const clientAgeGroupOptions = ['Kids', 'Teens', 'Adults', 'Seniors'];
 const paymentAccount = {
   bankName: 'nayapay',
   accountNumber: '03214026075',
@@ -69,9 +71,12 @@ export default function Dashboard() {
         capacity: trainerData.capacity || '',
         image: trainerData.image || '',
         name: trainerData.name || '',
+        headline: trainerData.headline || 'Personal Trainer',
         city: trainerData.city || '',
         area: trainerData.area || '',
         gender: trainerData.gender || '',
+        clientGenders: Array.isArray(trainerData.clientGenders) ? trainerData.clientGenders : ['Male', 'Female'],
+        clientAgeGroups: Array.isArray(trainerData.clientAgeGroups) ? trainerData.clientAgeGroups : ['Adults'],
         languages: Array.isArray(trainerData.languages) ? trainerData.languages.join(', ') : '',
         goals: trainerData.goals || [],
         serviceModes: trainerData.serviceModes || [],
@@ -223,6 +228,18 @@ export default function Dashboard() {
     }));
   };
 
+  const toggleProfileList = (key: 'clientGenders' | 'clientAgeGroups', value: string) => {
+    setProfileForm((current: any) => {
+      const values = Array.isArray(current[key]) ? current[key] : [];
+      return {
+        ...current,
+        [key]: values.includes(value)
+          ? values.filter((item: string) => item !== value)
+          : [...values, value]
+      };
+    });
+  };
+
   if (!trainerId) return <div className="px-6 py-20 text-center text-muted">Trainer session not found.</div>;
   if (loading) return (
     <PageShell>
@@ -318,19 +335,25 @@ export default function Dashboard() {
             <div className="grid gap-4 p-5">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input label="Full name" value={profileForm.name || ''} onChange={(value) => setProfileForm({ ...profileForm, name: value })} />
+                <Input label="Card headline" value={profileForm.headline || ''} onChange={(value) => setProfileForm({ ...profileForm, headline: value })} placeholder="Personal Trainer" />
                 <Input label="City" value={profileForm.city || ''} onChange={(value) => setProfileForm({ ...profileForm, city: value })} />
                 <Input label="Area" value={profileForm.area || ''} onChange={(value) => setProfileForm({ ...profileForm, area: value })} suggestions={getAreasForCity(profileForm.city || '')} />
-                <Input label="Gender" value={profileForm.gender || ''} onChange={(value) => setProfileForm({ ...profileForm, gender: value })} />
+                <Input label="Trainer gender" value={profileForm.gender || ''} onChange={(value) => setProfileForm({ ...profileForm, gender: value })} />
                 <Input label="Languages" value={profileForm.languages || ''} onChange={(value) => setProfileForm({ ...profileForm, languages: value })} placeholder="Urdu, English" />
                 <Input label="Specialties" value={(profileForm.goals || []).join(', ')} onChange={(value) => setProfileForm({ ...profileForm, goals: value.split(',').map((item) => item.trim()).filter(Boolean), specialty: value.split(',')[0]?.trim() || trainer.specialty })} />
                 <Input label="Service modes" value={(profileForm.serviceModes || []).join(', ')} onChange={(value) => setProfileForm({ ...profileForm, serviceModes: value.split(',').map((item) => item.trim()).filter(Boolean) })} placeholder="Gym, Home Visit, Online" />
               </div>
+              <MultiChoice label="Client genders you train" items={clientGenderOptions} values={profileForm.clientGenders || []} onToggle={(item) => toggleProfileList('clientGenders', item)} helper="Select both if you train male and female clients." />
+              <MultiChoice label="Client age groups you train" items={clientAgeGroupOptions} values={profileForm.clientAgeGroups || []} onToggle={(item) => toggleProfileList('clientAgeGroups', item)} />
               <button onClick={() => saveProfileSection('basic', {
                 name: profileForm.name,
+                headline: profileForm.headline || 'Personal Trainer',
                 city: profileForm.city,
                 location: profileForm.city,
                 area: profileForm.area,
                 gender: profileForm.gender,
+                clientGenders: profileForm.clientGenders,
+                clientAgeGroups: profileForm.clientAgeGroups,
                 languages: String(profileForm.languages || '').split(',').map((item) => item.trim()).filter(Boolean),
                 goals: profileForm.goals,
                 specialty: profileForm.specialty || profileForm.goals?.[0] || trainer.specialty,
@@ -767,6 +790,27 @@ function TextArea({ label, value, onChange, rows, placeholder = '' }: { label: s
       <span className="text-xs font-medium text-slate-500">{label}</span>
       <textarea rows={rows} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="rounded-xl border border-slate-700/50 bg-surface-high px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600" />
     </label>
+  );
+}
+
+function MultiChoice({ label, items, values, onToggle, helper = '' }: { label: string; items: string[]; values: string[]; onToggle: (item: string) => void; helper?: string }) {
+  return (
+    <div className="grid gap-2">
+      <span className="text-xs font-medium text-slate-500">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {items.map((item) => (
+          <button
+            type="button"
+            key={item}
+            onClick={() => onToggle(item)}
+            className={`rounded-full px-4 py-2 text-[11px] font-bold ${values.includes(item) ? 'bg-primary text-white' : 'border border-slate-700/50 bg-surface-high/80 text-slate-300'}`}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+      {helper && <p className="text-xs text-slate-500">{helper}</p>}
+    </div>
   );
 }
 

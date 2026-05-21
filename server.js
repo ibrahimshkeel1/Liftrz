@@ -796,6 +796,7 @@ app.post('/api/trainers', route(async (req, res) => {
     contactPhone: req.body.phone,
     whatsapp: req.body.whatsapp || req.body.phone,
     specialty: req.body.specialty || 'General Fitness',
+    headline: sanitizeString(req.body.headline, 80) || 'Personal Trainer',
     bio: req.body.bio || '',
     price: req.body.price || '0',
     rating: 0,
@@ -804,6 +805,8 @@ app.post('/api/trainers', route(async (req, res) => {
     city: req.body.city || req.body.location || 'Pakistan',
     area: req.body.area || '',
     gender: req.body.gender || '',
+    clientGenders: Array.isArray(req.body.clientGenders) ? req.body.clientGenders : ['Male', 'Female'],
+    clientAgeGroups: Array.isArray(req.body.clientAgeGroups) ? req.body.clientAgeGroups : ['Adults'],
     languages: req.body.languages || ['Urdu'],
     serviceModes: req.body.serviceModes || ['Online'],
     experienceLevel: req.body.experienceLevel || 'Intermediate',
@@ -895,6 +898,7 @@ app.patch('/api/trainers/:id/profile', requireAuth, route(async (req, res) => {
   const now = new Date().toISOString();
   const allowed = new Set([
     'name', 'phone', 'contactPhone', 'whatsapp', 'email', 'city', 'location', 'area', 'gender',
+    'headline', 'clientGenders', 'clientAgeGroups',
     'languages', 'specialty', 'goals', 'serviceModes', 'bio', 'price', 'capacity', 'image',
     'availableDays', 'availableTimeSlots', 'homeVisitAreas', 'availabilityNote',
     'cnicNumber', 'cnicFrontImage', 'cnicBackImage',

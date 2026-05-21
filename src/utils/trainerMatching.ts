@@ -88,6 +88,7 @@ export function normalizeSpecialtyFilter(value: string) {
 function trainerText(trainer: any) {
   const baseValues = [
     trainer.name,
+    trainer.headline,
     trainer.specialty,
     trainer.city,
     trainer.location,
@@ -95,6 +96,8 @@ function trainerText(trainer: any) {
     trainer.gender,
     trainer.bio,
     trainer.homeVisitAreas,
+    ...(Array.isArray(trainer.clientGenders) ? trainer.clientGenders : []),
+    ...(Array.isArray(trainer.clientAgeGroups) ? trainer.clientAgeGroups : []),
     ...(Array.isArray(trainer.goals) ? trainer.goals : []),
     ...(Array.isArray(trainer.serviceModes) ? trainer.serviceModes : []),
     ...(Array.isArray(trainer.languages) ? trainer.languages : []),
