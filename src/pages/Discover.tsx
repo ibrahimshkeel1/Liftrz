@@ -335,7 +335,12 @@ export default function Discover() {
                       {trainer.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <div className="absolute left-3 top-3 flex items-center gap-2">
+                  <div className="absolute left-3 top-3 flex max-w-[calc(100%-5rem)] flex-wrap items-center gap-2">
+                    {trainer.identityStatus === 'approved' && (
+                      <span className="flex items-center gap-1 rounded-full border border-success/40 bg-success/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm" title="CNIC verified">
+                        <ShieldCheck className="h-3 w-3" /> CNIC
+                      </span>
+                    )}
                     <span className="rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
                       {trainer.gender === 'Female' ? 'Female' : 'Male'}
                     </span>

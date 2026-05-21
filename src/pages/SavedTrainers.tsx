@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Heart, MapPin, Star, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, ShieldCheck, Star, Trash2 } from 'lucide-react';
 import { api } from '../utils/api';
 import SEO from '../components/SEO';
 import EmptyState from '../components/EmptyState';
@@ -68,6 +68,11 @@ export default function SavedTrainers() {
                     <div className="flex h-full w-full items-center justify-center text-2xl font-black text-primary/30">
                       {trainer.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
+                  )}
+                  {trainer.identityStatus === 'approved' && (
+                    <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full border border-success/40 bg-success/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm" title="CNIC verified">
+                      <ShieldCheck className="h-3 w-3" /> CNIC
+                    </span>
                   )}
                   <button onClick={() => remove(trainer.id)} className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white backdrop-blur-sm transition-colors hover:bg-red-500">
                     <Trash2 className="h-4 w-4" />
