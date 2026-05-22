@@ -56,6 +56,7 @@ const firstPositive = (...values: Array<number | string | undefined>) => values.
 export const toStartingPrice = (trainer: any) => firstPositive(trainer.lowestPackagePrice, trainer.startingPrice, trainer.monthlyPrice, trainer.monthlyPackagePrice, trainer.sessionPrice, trainer.price);
 export const toSessionPrice = (trainer: any) => toStartingPrice(trainer);
 export const toMonthlyEstimate = (trainer: any) => firstPositive(trainer.monthlyPrice, trainer.monthlyPackagePrice, trainer.lowestPackagePrice, trainer.startingPrice) || Math.round(firstPositive(trainer.sessionPrice, trainer.price) * 12);
+export const toStartingDuration = (trainer: any) => trainer.lowestPackageDuration || trainer.packageDuration || '';
 
 export function normalizeText(value: unknown) {
   return String(value || '')

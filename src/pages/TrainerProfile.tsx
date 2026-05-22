@@ -399,7 +399,6 @@ export default function TrainerProfile() {
             </div>
             <div className="grid gap-4">
               {protocols.map((protocol) => {
-                const protocolMonthly = Math.round(Number(String(protocol.price || 0).replace(/,/g, '')));
                 const isSelected = selectedPackage?.id === protocol.id;
                 return (
                   <article key={protocol.id} className={`rounded-2xl border p-5 transition-all ${isSelected ? 'border-primary bg-primary/5' : 'border-slate-700/50 bg-surface'}`}>
@@ -410,7 +409,6 @@ export default function TrainerProfile() {
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold text-primary">{money(protocol.price)}</p>
-                        <p className="text-xs text-slate-500">{protocolMonthly >= 1000 ? `~PKR ${protocolMonthly.toLocaleString()}/mo` : ''}</p>
                       </div>
                     </div>
                     <p className="mt-3 text-sm leading-7 text-slate-400">{protocol.description}</p>

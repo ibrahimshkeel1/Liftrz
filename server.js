@@ -466,6 +466,9 @@ const publicTrainer = (trainer, db) => {
     .map((protocol) => parseAmount(protocol.price))
     .filter((price) => price > 0);
   const lowestPackagePrice = packagePrices.length ? Math.min(...packagePrices) : 0;
+  const lowestPackage = approvedProtocols
+    .filter((protocol) => parseAmount(protocol.price) > 0)
+    .sort((a, b) => parseAmount(a.price) - parseAmount(b.price))[0];
   return {
     ...safe,
     certifications: Array.isArray(trainer.certifications)
@@ -485,6 +488,7 @@ const publicTrainer = (trainer, db) => {
     completedBookings: stats.completedClients || 0,
     activeClients: stats.activeClients || 0,
     lowestPackagePrice,
+    lowestPackageDuration: lowestPackage?.duration || '',
     startingPrice: lowestPackagePrice || parseAmount(trainer.price),
     approvedPackageCount: approvedProtocols.length,
     commissionRate: trainer.commissionRate ?? db.platformSettings?.commissionRate ?? 0.15,

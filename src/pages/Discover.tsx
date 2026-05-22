@@ -8,7 +8,7 @@ import { SkeletonCard, SkeletonHero } from '../components/Skeleton';
 import { HeroBlock, InfoPill, PageContainer, PageShell, Surface } from '../components/premium';
 import { MotionCard, Reveal } from '../components/Motion';
 import { toggleFavorite } from '../utils/favorites';
-import { matchesCity, matchesGender, matchesMode, matchesSearch, matchesSpecialty, normalizeSpecialtyFilter, toMonthlyEstimate, toStartingPrice } from '../utils/trainerMatching';
+import { matchesCity, matchesGender, matchesMode, matchesSearch, matchesSpecialty, normalizeSpecialtyFilter, toMonthlyEstimate, toStartingDuration, toStartingPrice } from '../utils/trainerMatching';
 
 const cities = ['All', 'Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Gujranwala', 'Sialkot', 'Online'];
 const modes = ['All', 'Gym', 'Home Visit', 'Online', 'Studio'];
@@ -297,9 +297,9 @@ export default function Discover() {
                   <h3 className="font-semibold text-white">{trainer.name}</h3>
                   <p className="mt-1 text-xs text-slate-400">{trainer.city} - {trainer.specialty}</p>
                   <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-slate-300">
-                    <span>~PKR {toMonthlyEstimate(trainer).toLocaleString()}/mo</span>
+                    <span>{toStartingPrice(trainer) > 0 ? `PKR ${toStartingPrice(trainer).toLocaleString()}` : 'Ask'}</span>
+                    <span>{toStartingDuration(trainer) || 'Package'}</span>
                     <span>{trainer.rating ? `${trainer.rating} rating` : 'No reviews'}</span>
-                    <span>{trainer.completedBookings ? `${trainer.completedBookings} done` : 'New trainer'}</span>
                   </div>
                 </div>
               ))}
@@ -319,7 +319,7 @@ export default function Discover() {
             const hasVideo = trainer.videoUrl;
             const isAvailable = availableSlots > 0;
             const startingPrice = toStartingPrice(trainer);
-            const monthlyEstimate = toMonthlyEstimate(trainer);
+            const startingDuration = toStartingDuration(trainer);
             const headline = trainer.headline || 'Personal Trainer';
 
             return (
@@ -394,7 +394,7 @@ export default function Discover() {
                     <div className="text-right">
                       <p className="text-lg font-bold text-primary">{startingPrice > 0 ? `PKR ${startingPrice.toLocaleString()}` : 'Ask'}</p>
                       <p className="text-xs text-slate-500">{startingPrice > 0 ? 'starting from' : 'for pricing'}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-500">~PKR {monthlyEstimate.toLocaleString()}/mo</p>
+                      {startingDuration && <p className="mt-0.5 text-[11px] text-slate-500">{startingDuration}</p>}
                     </div>
                   </div>
 
