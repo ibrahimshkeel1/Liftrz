@@ -6,18 +6,7 @@
     "paymentMethods": ["Bank Transfer", "JazzCash", "EasyPaisa"],
     "contactUnlockPolicy": "Direct trainer contact is shown only after admin verifies payment."
   },
-  "users": [
-    {
-      "id": "admin-1",
-      "role": "admin",
-      "name": "Admin",
-      "email": "admin",
-      "phone": "+923000000000",
-      "passwordHash": "scrypt$3602e506265e432b2650e84f489fefdc$417f2e560bc7bd7d24d0eb5246b939ff32ef6d3fcb278221b1f297c4638333f42fb6b5b880e4062362d7723f9803e3505eabe2756ccf6ae2fa27f4819a61176d",
-      "status": "active",
-      "createdAt": "2026-05-15T00:00:00.000Z"
-    }
-  ],
+  "users": [],
   "trainers": [],
   "trainerDocuments": [],
   "protocols": [],

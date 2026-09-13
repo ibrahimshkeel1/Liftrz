@@ -1,29 +1,74 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Liftrz
 
-# Run and deploy your AI Studio app
+Premium fitness trainer marketplace for Pakistan — discover verified trainers, book protocols, and manage leads end-to-end.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/b26c5b33-e3b4-4728-b123-f462b30d9d0a
+- **Discovery** — Filter by goal, location, price, and experience
+- **Trainer dashboard** — Track views, leads, response time, and client protocols
+- **Client dashboard** — Nutrition logging, payment flow, and active protocol tracking
+- **Admin panel** — Trainer verification, payment approval, and lead oversight
+- **Booking flows** — General inquiries and protocol bookings with payment receipt upload
 
-## Run Locally
+## Stack
 
-**Prerequisites:**  Node.js
+- **Frontend:** React 19 + Vite + Tailwind CSS
+- **Backend:** Express API
+- **Persistence:** Supabase (production) or SQLite (local dev)
+- **Email:** Resend
 
+## Quick start
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+npm install
+cp .env.example .env.local   # fill in secrets locally — never commit this file
+npm run dev
+```
 
-## Supabase
+Open http://localhost:3000
 
-For persistent marketplace storage, create a Supabase project and run [supabase/schema.sql](./supabase/schema.sql).
+### Environment variables
 
-Set these environment variables in Vercel and locally:
+Copy `.env.example` to `.env.local` and set:
 
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `LIFTRZ_AUTH_SECRET` | Yes | Random string (64+ chars) for JWT signing |
+| `SUPABASE_URL` | Production | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Production | Supabase service role key |
+| `RESEND_API_KEY` | Optional | Transactional email via Resend |
+| `CORS_ORIGIN` | Optional | Frontend origin for CORS |
+
+For Supabase setup, run [supabase/schema.sql](./supabase/schema.sql) in your project SQL editor.
+
+### Admin access
+
+Register a user through the app, then promote them in Supabase:
+
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';
+```
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server + Express API |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+
+## Project layout
+
+```
+src/          React pages and components
+server.js     Express API
+lib/          Auth, email, Supabase/SQLite stores
+supabase/     Database schema
+db.example.json   Local seed template (no credentials)
+```
+
+## Security
+
+- Never commit `.env`, `.env.local`, `db.json`, or `*.sqlite`
+- API keys and secrets belong in environment variables only
+- See [MVP_PLAN.md](./MVP_PLAN.md) and [PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md) for roadmap details

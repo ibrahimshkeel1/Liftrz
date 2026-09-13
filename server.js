@@ -48,12 +48,12 @@ const useSupabase = Boolean(supabaseUrl && process.env.SUPABASE_SERVICE_ROLE_KEY
 const requireDurableStore = isServerless;
 const sqliteStore = createSQLiteStore({
   rootDir: __dirname,
-  seedFile: path.join(__dirname, 'db.json'),
+  seedFile: path.join(__dirname, 'db.example.json'),
   isServerless
 });
 const supabaseStore = useSupabase
   ? createSupabaseStore({
-      seedFile: path.join(__dirname, 'db.json')
+      seedFile: path.join(__dirname, 'db.example.json')
     })
   : null;
 
@@ -240,8 +240,8 @@ const migrateLegacyUsers = async () => {
   let changed = false;
   db.users = db.users.map((user) => {
     const nextUser = { ...user };
-    if (!nextUser.passwordHash) {
-      nextUser.passwordHash = hashPassword(nextUser.password || 'Liftrz123');
+    if (!nextUser.passwordHash && nextUser.password) {
+      nextUser.passwordHash = hashPassword(nextUser.password);
       changed = true;
     }
     if (nextUser.password) {
@@ -673,6 +673,7 @@ app.post('/api/trainers', route(async (req, res) => {
   const email = req.body.email?.toLowerCase()?.trim();
   const emailTaken = db.users.some((user) => user.email?.toLowerCase() === email);
   if (emailTaken) return res.status(409).json({ message: 'Email already registered' });
+  if (!req.body.password) return res.status(400).json({ message: 'Password is required' });
 
   const trainerId = req.body.id || makeId('trainer');
   const trainerSlug = (req.body.name || 'trainer')
@@ -694,7 +695,7 @@ app.post('/api/trainers', route(async (req, res) => {
     name: req.body.name,
     email,
     phone: req.body.phone,
-    passwordHash: hashPassword(req.body.password || 'trainer123'),
+    passwordHash: hashPassword(req.body.password),
     status: 'active',
     trainerId,
     city: req.body.city || req.body.location || '',
